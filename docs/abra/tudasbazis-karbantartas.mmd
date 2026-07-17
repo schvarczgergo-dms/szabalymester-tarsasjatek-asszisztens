@@ -1,0 +1,21 @@
+%%{init: {"theme":"base","themeVariables":{"fontSize":"16px","primaryColor":"#eef6ff","primaryBorderColor":"#3b82f6","lineColor":"#64748b"}}}%%
+flowchart TD
+    A["Forrás<br/>szabálykönyv-PDF / seed/rules mappa"] --> B["Letöltés + normalizálás<br/>+ kiadói zaj szűrése"]
+    B --> C{"Hash-összevetés<br/>knowledge_documents.content_hash"}
+    C -- "hash egyezik" --> D["Kihagyás<br/>NEM vektorizálódik újra"]
+    C -- "új dokumentum" --> E["Chunkolás<br/>szakasz-alapú + játéknév-fejléc"]
+    C -- "hash eltér (módosult)" --> F["Régi chunkok törlése<br/>egy tranzakcióban"]
+    F --> E
+    E --> G["Embedding batch<br/>text-embedding-3-small (1536 dim)"]
+    G --> H[("knowledge_chunks<br/>pgvector")]
+    E --> I[("knowledge_documents<br/>hash + indexed_at frissítés")]
+    C -- "forrásból eltűnt" --> J["status = deleted<br/>chunkok CASCADE törlése"]
+    J --> H
+    K["Trigger<br/>heti cron / kézi ingest / --rebuild"] --> B
+
+    classDef store fill:#fef9c3,stroke:#ca8a04,color:#000;
+    classDef skip fill:#dcfce7,stroke:#16a34a,color:#000;
+    classDef del fill:#fee2e2,stroke:#dc2626,color:#000;
+    class H,I store;
+    class D skip;
+    class J del;

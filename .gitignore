@@ -1,0 +1,29 @@
+# Függőségek
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Környezeti változók (soha ne kerüljön a repóba — csak a .env.example)
+.env
+.env.local
+.env.*.local
+
+# Naplók
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Teszt / coverage
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
