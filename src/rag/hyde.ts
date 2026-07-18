@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import type { Config } from '../config';
+import { createProviders } from '../providers';
 
 /** Egy HyDE-generálás portja — a valós `generateText` köré, teszthez injektálható fake-kel. */
 export type HydeGenerateFn = (
@@ -46,6 +46,7 @@ const HYDE_SYSTEM =
  * kizárólag a `config`-ból (AD-6); a HyDE külön providernél fut, mint a rerank (AD-7).
  */
 export function createOpenAIHydeGenerate(config: Config): HydeGenerateFn {
+  const { openai } = createProviders(config);
   return async (question) => {
     const { text, usage } = await generateText({
       model: openai(config.hydeModel),

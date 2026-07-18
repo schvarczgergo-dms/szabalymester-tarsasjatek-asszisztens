@@ -274,7 +274,7 @@ async function readCorpusFromFs(): Promise<CorpusEntry[]> {
 /** A `pnpm ingest [--rebuild]` belépőpont: fail-fast config + valós fs/OpenAI/pg wiring. */
 async function main(): Promise<void> {
   const config = loadConfig();
-  checkEmbeddingDimensions(config.embeddingDimensions);
+  checkEmbeddingDimensions(config.embeddingDimensions, config.schemaVectorDim);
 
   const rebuild = process.argv.includes('--rebuild');
   const embedBatch = createOpenAIEmbedBatch(config);

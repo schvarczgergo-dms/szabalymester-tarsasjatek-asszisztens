@@ -1,7 +1,7 @@
 import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import type { Config } from '../config';
+import { createProviders } from '../providers';
 
 /** A rerank strukturált kimenete — a rendszer-határon Zod-validált (AD-8). */
 export const rerankSchema = z.object({
@@ -80,6 +80,7 @@ export async function rerankChunks(
  * providernél fut, mint a HyDE (AD-7); a modellnév kizárólag a `config`-ból (AD-6).
  */
 export function createAnthropicRerankGenerate(config: Config): RerankGenerateFn {
+  const { anthropic } = createProviders(config);
   return async ({ question, candidates }) => {
     const numbered = candidates.map((text, index) => `[${index}] ${text}`).join('\n\n');
     const { object, usage } = await generateObject({

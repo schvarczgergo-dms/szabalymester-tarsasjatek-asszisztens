@@ -33,6 +33,9 @@ const required = () =>
 const withDefault = (fallback: string) =>
   z.preprocess(blankToUndefined, z.string().min(1).default(fallback));
 
+/** Opcionális URL (base-URL override lokális/proxy módhoz); üres/whitespace → undefined. */
+const optionalUrl = () => z.preprocess(blankToUndefined, z.string().url().optional());
+
 /** Pozitív egész env-változó alapértelmezéssel; üres/whitespace → default. */
 const positiveInt = (fallback: number) =>
   z.preprocess(
@@ -49,8 +52,11 @@ const KEY_TO_ENV: Record<string, string> = {
   openaiApiKey: 'OPENAI_API_KEY',
   anthropicApiKey: 'ANTHROPIC_API_KEY',
   databaseUrl: 'DATABASE_URL',
+  openaiBaseUrl: 'OPENAI_BASE_URL',
+  anthropicBaseUrl: 'ANTHROPIC_BASE_URL',
   embeddingModel: 'EMBEDDING_MODEL',
   embeddingDimensions: 'EMBEDDING_DIMENSIONS',
+  schemaVectorDim: 'SCHEMA_VECTOR_DIM',
   hydeModel: 'HYDE_MODEL',
   rerankModel: 'RERANK_MODEL',
   answerModel: 'ANSWER_MODEL',
@@ -59,14 +65,23 @@ const KEY_TO_ENV: Record<string, string> = {
 };
 
 const configSchema = z.object({
-  // Titkok — a rendszer nem indul el nélkülük.
+  // Titkok — a rendszer nem indul el nélkülük. (Lokális módban dummy érték is elég,
+  // mert a base-URL a helyi Ollama/LiteLLM-re mutat — ld. docs/local-mode.md.)
   openaiApiKey: required(),
   anthropicApiKey: required(),
   databaseUrl: required(),
 
+  // Provider base-URL override — üresen az igazi OpenAI/Anthropic; kitöltve a helyi
+  // Ollama (OpenAI-kompatibilis) ill. a LiteLLM proxy (Anthropic-kompatibilis) végpont.
+  openaiBaseUrl: optionalUrl(),
+  anthropicBaseUrl: optionalUrl(),
+
   // Modell-szereposztás (az architektúra-spine web-ellenőrzött értékei) — mind felülírható env-ből.
   embeddingModel: withDefault('text-embedding-3-small'),
   embeddingDimensions: positiveInt(1536),
+  // A séma vector(N) dimenziója — a config-oldali fail-fast ehhez méri az embeddinget (AD-3).
+  // Lokális embed-modellnél állítsd ezt ÉS a db/schema.sql-t a modell dimenziójára.
+  schemaVectorDim: positiveInt(1536),
   hydeModel: withDefault('gpt-5.4-nano'),
   rerankModel: withDefault('claude-haiku-4-5'),
   answerModel: withDefault('claude-sonnet-5'),
@@ -90,8 +105,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     openaiApiKey: env.OPENAI_API_KEY,
     anthropicApiKey: env.ANTHROPIC_API_KEY,
     databaseUrl: env.DATABASE_URL,
+    openaiBaseUrl: env.OPENAI_BASE_URL,
+    anthropicBaseUrl: env.ANTHROPIC_BASE_URL,
     embeddingModel: env.EMBEDDING_MODEL,
     embeddingDimensions: env.EMBEDDING_DIMENSIONS,
+    schemaVectorDim: env.SCHEMA_VECTOR_DIM,
     hydeModel: env.HYDE_MODEL,
     rerankModel: env.RERANK_MODEL,
     answerModel: env.ANSWER_MODEL,
