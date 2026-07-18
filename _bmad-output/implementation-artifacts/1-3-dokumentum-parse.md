@@ -1,6 +1,10 @@
+---
+baseline_commit: b230367
+---
+
 # Story 1.3: Dokumentum-parse
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -16,18 +20,18 @@ so that a korpusz megbízhatóan, zaj nélkül kerül a pipeline-ba, és a hash 
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `src/ingest/parse-document.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 1, 2, 3)
-  - [ ] `parseDocument`: érvényes dokumentum → helyes `frontMatter` + `body`; hiányzó front matter → `ParseError`; hiányzó/érvénytelen mező (`section` nem a kanonikus öt) → `ParseError` a mező nevével.
-  - [ ] `normalize`: `\r\n`/`\r` → `\n`; soronkénti trailing whitespace levágva; 3+ egymást követő üres sor 1-re; front matter eltávolítva; zaj-sorok (©/„Minden jog fenntartva"/kiadói URL) kiszűrve; **NEM** kisbetűsít.
-  - [ ] determinizmus: ugyanaz a bemenet mindig ugyanaz a kimenet; `contentHash(normalize(x))` stabil, és whitespace/kiadói-sor változásra NEM változik, érdemi tartalomváltozásra IGEN.
-- [ ] **T2: `src/ingest/parse-document.ts` — implementáció (GREEN)** (AC: 1, 2, 3)
-  - [ ] Típusok: `Section` (`'attekintes'|'elokeszules'|'jatekmenet'|'pontozas'|'gyik'` — egyezik a `db/schema.sql` CHECK-jével), `FrontMatter` (`title,game,source,section`), `ParsedDocument` (`frontMatter`, `body`), `ParseError extends Error`.
-  - [ ] Front matter: **dependency-mentes** parse — a vezető `---\n…\n---\n` blokk kivágása regexszel; a flat `kulcs: érték` sorok objektummá; a törzs a maradék. (NE húzz be új YAML-libet — a front matter lapos; ha később nem-lapos kell, akkor jön `js-yaml`.)
-  - [ ] Validáció **Zod-dal** (a `config.ts` mintája szerint): a `FrontMatter` séma; hiányzó/rossz mező → `ParseError` beszédes, magyar, a mezőt (és ha van, a `source`-ot) megnevező üzenettel.
-  - [ ] `normalize(raw)`: az AC-2 lépéssora, tiszta függvény; a `stripNoise` determinisztikus regex-készlet (©/copyright, „Minden jog fenntartva", `www.gemklub`/kiadói URL, csak-illusztráció `![...]()` sor). `contentHash(text)`: `node:crypto` `createHash('sha256')` hex.
-  - [ ] `parseDocument(raw)`: front matter kivágás → Zod-validáció → `{ frontMatter, body: normalize(raw) }`.
-- [ ] **T3: Zöld-kapu** (AC: 3)
-  - [ ] `pnpm test` (a régi 13 + az újak) zöld; `pnpm typecheck && pnpm lint && pnpm format:check` zöld.
+- [x] **T1: `src/ingest/parse-document.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 1, 2, 3)
+  - [x] `parseDocument`: érvényes dokumentum → helyes `frontMatter` + `body`; hiányzó front matter → `ParseError`; hiányzó/érvénytelen mező (`section` nem a kanonikus öt) → `ParseError` a mező nevével.
+  - [x] `normalize`: `\r\n`/`\r` → `\n`; soronkénti trailing whitespace levágva; 3+ egymást követő üres sor 1-re; front matter eltávolítva; zaj-sorok (©/„Minden jog fenntartva"/kiadói URL) kiszűrve; **NEM** kisbetűsít.
+  - [x] determinizmus: ugyanaz a bemenet mindig ugyanaz a kimenet; `contentHash(normalize(x))` stabil, és whitespace/kiadói-sor változásra NEM változik, érdemi tartalomváltozásra IGEN.
+- [x] **T2: `src/ingest/parse-document.ts` — implementáció (GREEN)** (AC: 1, 2, 3)
+  - [x] Típusok: `Section` (`'attekintes'|'elokeszules'|'jatekmenet'|'pontozas'|'gyik'` — egyezik a `db/schema.sql` CHECK-jével), `FrontMatter` (`title,game,source,section`), `ParsedDocument` (`frontMatter`, `body`), `ParseError extends Error`.
+  - [x] Front matter: **dependency-mentes** parse — a vezető `---\n…\n---\n` blokk kivágása regexszel; a flat `kulcs: érték` sorok objektummá; a törzs a maradék. (NE húzz be új YAML-libet — a front matter lapos; ha később nem-lapos kell, akkor jön `js-yaml`.)
+  - [x] Validáció **Zod-dal** (a `config.ts` mintája szerint): a `FrontMatter` séma; hiányzó/rossz mező → `ParseError` beszédes, magyar, a mezőt (és ha van, a `source`-ot) megnevező üzenettel.
+  - [x] `normalize(raw)`: az AC-2 lépéssora, tiszta függvény; a `stripNoise` determinisztikus regex-készlet (©/copyright, „Minden jog fenntartva", `www.gemklub`/kiadói URL, csak-illusztráció `![...]()` sor). `contentHash(text)`: `node:crypto` `createHash('sha256')` hex.
+  - [x] `parseDocument(raw)`: front matter kivágás → Zod-validáció → `{ frontMatter, body: normalize(raw) }`.
+- [x] **T3: Zöld-kapu** (AC: 3)
+  - [x] `pnpm test` (a régi 13 + az újak) zöld; `pnpm typecheck && pnpm lint && pnpm format:check` zöld.
 
 ## Dev Notes
 
@@ -66,8 +70,27 @@ so that a korpusz megbízhatóan, zaj nélkül kerül a pipeline-ba, és a hash 
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`)
+
 ### Debug Log References
+
+- RED: `pnpm test` a `parse-document.ts` előtt → a spec import bukik (13 config zöld).
+- GREEN: implementáció után 25/25 teszt (13 config + 12 parse).
+- Zöld-kapu: `typecheck · lint · format:check · test` mind zöld.
 
 ### Completion Notes List
 
+- `src/ingest/parse-document.ts` (első fájl a `src/ingest/` alatt): `parseDocument`, `normalize`, `contentHash`, `Section`/`FrontMatter`/`ParsedDocument`/`ParseError`.
+- **AD-5:** egyetlen `normalize()` (front-matter-strip → zaj-szűrés → `\r\n`→`\n` → trailing-WS → 3+ üres sor összevonás → trim, kisbetűsítés NÉLKÜL) a hash ÉS a chunker közös forrása; teszt igazolja, hogy a whitespace-változás nem, a tartalomváltozás igen módosítja a `contentHash`-t.
+- **Dependency-mentes** front-matter parse (lapos `kulcs: érték`, idézőjel- és inline-komment-kezeléssel); a hash `node:crypto`. Nem kellett új függőség.
+- Zod-validáció a `config.ts` mintája szerint; hiba → `ParseError` a mezőt megnevezve. A `Section` enum egyezik a `db/schema.sql` CHECK-jével (AD-10).
+- 12 unit teszt fedi: érvényes doc, hiányzó front matter, hiányzó mező, rossz section, inline komment, CRLF, trailing WS, üres sorok, zaj-szűrés, kis/nagybetű-megőrzés, determinizmus, hash-stabilitás.
+
 ### File List
+
+- `src/ingest/parse-document.ts` (új)
+- `src/ingest/parse-document.spec.ts` (új)
+
+### Change Log
+
+- 2026-07-18: Story 1.3 implementálva — dokumentum-parse + normalize + contentHash, TDD (RED→GREEN), 25/25 teszt. Status → review.
