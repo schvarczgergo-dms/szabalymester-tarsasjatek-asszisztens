@@ -51,7 +51,7 @@ development_status:
   epic-1: in-progress
   1-1-projektvaz-es-konfiguracio: done
   1-2-tudasbazis-sema: done
-  1-3-dokumentum-parse: ready-for-dev
+  1-3-dokumentum-parse: review
   1-4-determinisztikus-chunkolas: backlog
   1-5-embedding-es-tarolas: backlog
   1-6-inkrementalis-ingest: backlog
