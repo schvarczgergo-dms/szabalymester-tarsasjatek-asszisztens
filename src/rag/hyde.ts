@@ -56,7 +56,8 @@ export function createOpenAIHydeGenerate(config: Config): HydeGenerateFn {
   const system = config.corpusLanguage === 'en' ? HYDE_SYSTEM_EN : HYDE_SYSTEM_HU;
   return async (question) => {
     const { text, usage } = await generateText({
-      model: openai(config.hydeModel),
+      // Chat Completions API (nem a Responses API): Ollama-kompatibilis, és valós OpenAI-jal is működik.
+      model: openai.chat(config.hydeModel),
       system,
       prompt: question,
     });

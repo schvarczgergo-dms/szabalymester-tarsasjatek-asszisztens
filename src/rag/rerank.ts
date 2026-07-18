@@ -82,11 +82,15 @@ export async function rerankChunks(
  */
 export function createRerankGenerate(config: Config): RerankGenerateFn {
   const providers = createProviders(config);
-  const provider = config.rerankProvider === 'openai' ? providers.openai : providers.anthropic;
+  // OpenAI-oldalon a Chat Completions API (Ollama-kompatibilis, a Responses API helyett).
+  const model =
+    config.rerankProvider === 'openai'
+      ? providers.openai.chat(config.rerankModel)
+      : providers.anthropic(config.rerankModel);
   return async ({ question, candidates }) => {
     const numbered = candidates.map((text, index) => `[${index}] ${text}`).join('\n\n');
     const { object, usage } = await generateObject({
-      model: provider(config.rerankModel),
+      model,
       schema: rerankSchema,
       system:
         'Pontozd 0–10 skálán, mennyire válaszolja meg az egyes szövegrészletek a kérdést. ' +
