@@ -85,4 +85,34 @@ describe('chunkDocument', () => {
     const body = '## A\n\nPa.\n\n## B\n\n1. Egy\n2. Kettő';
     expect(chunkDocument(doc(body))).toEqual(chunkDocument(doc(body)));
   });
+
+  it('a chunk törzse átfedéssel sem lépi túl a maxChars-t', () => {
+    const body = `${'A'.repeat(900)}\n\n${'B'.repeat(900)}`;
+    const chunks = chunkDocument(doc(body), { targetChars: 1000, maxChars: 1500 });
+    const bodyLen = (c: (typeof chunks)[number]) =>
+      c.content.split('\n\n').slice(1).join('\n\n').length;
+    expect(chunks.every((c) => bodyLen(c) <= 1500)).toBe(true);
+  });
+
+  it('a hosszú bekezdés darabolása nem veszít tartalmat (tizedes szám)', () => {
+    const long = 'Az ár 3.5 euró és ez egy nagyon hosszú mondat lezárás nélkül külön';
+    const all = chunkDocument(doc(long), { maxChars: 12 })
+      .map((c) => c.content)
+      .join(' ');
+    expect(all).toContain('3.5');
+    expect(all).toContain('külön');
+  });
+
+  it('az egysoros, számmal kezdődő próza NEM atomi lista', () => {
+    const chunks = chunkDocument(doc('2024. óta érvényes.\n\nMásik bekezdés.'), { dwarfChars: 0 });
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0]!.content).toContain('2024.');
+    expect(chunks[0]!.content).toContain('Másik bekezdés.');
+  });
+
+  it('testvér ### breadcrumbjai nem ágyazódnak (## nélkül)', () => {
+    const chunks = chunkDocument(doc('### X\n\nAAAA.\n\n### Y\n\nBBBB.'), { dwarfChars: 0 });
+    expect(chunks[0]!.heading).toBe('X');
+    expect(chunks[1]!.heading).toBe('Y');
+  });
 });

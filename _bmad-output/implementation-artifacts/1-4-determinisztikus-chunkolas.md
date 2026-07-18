@@ -4,7 +4,7 @@ baseline_commit: 2770aa2
 
 # Story 1.4: Determinisztikus chunkolás játéknév-fejléccel
 
-Status: review
+Status: done
 
 ## Story
 
@@ -35,6 +35,14 @@ so that a keresés játékok között is elkülönít, és a szabály-egységek 
   - [x] Csomagolás `targetChars`-ig; lista atomi (korlát felett is); hosszú bekezdés mondathatáron (`. ! ?`) vágva `maxChars`-ig; törpe-szakasz carry-forward a következőbe; szakaszon belüli átfedés az utolsó bekezdéssel.
   - [x] `content` = `formatHeader(game, breadcrumb)\n\n<szöveg>`; `chunkIndex` globális folytonos.
 - [x] **T3: Zöld-kapu** (AC: 4) — `pnpm test` (a régi 28 + újak) + `typecheck · lint · format:check` zöld.
+
+### Review Findings
+
+- [x] [Review][Patch] Overlap `max`-guard: az átfedő bekezdés + következő blokk párja csak ha `<= max` (különben a chunk a `max` kétszereséig nőhetett). Forrás: blind+edge (High). [chunk.ts:packBlocks]
+- [x] [Review][Patch] `splitSentences` tartalommegőrzés (`split` a `match` helyett) + `<= max` garancia (`hardSplit` szóhatár-fallback) — a tizedes szám / lezáratlan farok / írásjel-nélküli blokk nem veszít tartalmat és nem ad óriás-chunkot. Forrás: blind+edge. [chunk.ts:splitSentences]
+- [x] [Review][Patch] Lista-detektálás szigorítása: az egysoros, számmal+ponttal kezdődő próza („2024. óta…") nem minősül atomi listának (`>=2` sor VAGY felsorolásjel). Forrás: edge. [chunk.ts:blockify]
+- [x] [Review][Patch] Testvér-`###` breadcrumb (H2/H3 külön slot): `##` nélküli `###`-ek nem ágyazódnak egymásba; üres cím sem csonkít. Forrás: edge. [chunk.ts:splitIntoSections]
+- [x] [Review][Defer] `####`/`#` markup a törzsben — a korpusz `##`/`###`-t használ, a `#` cím a front-matterben; nem javítjuk.
 
 ## Dev Notes
 
@@ -91,3 +99,4 @@ Claude Opus 4.8 (`claude-opus-4-8`)
 ### Change Log
 
 - 2026-07-18: Story 1.4 implementálva — determinisztikus chunkolás játéknév-fejléccel, TDD, 38/38 teszt. Status → review.
+- 2026-07-18: Code review — 4 patch (overlap max-guard, splitSentences tartalommegőrzés+hardSplit, lista-detektálás, testvér-### breadcrumb), +4 teszt (42 összesen), zöld-kapu. Status → done.
