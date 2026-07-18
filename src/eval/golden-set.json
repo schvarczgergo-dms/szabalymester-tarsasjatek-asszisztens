@@ -1,0 +1,75 @@
+{
+  "description": "Golden set a Szabálymester retrieval-kiértékeléséhez. A gold a korpuszhoz igazodik (angol Wikipédia CC BY-SA; a szabály jellemzően a 'jatekmenet' dokumentumban).",
+  "questions": [
+    {
+      "id": "catan-7",
+      "type": "positive",
+      "question": "Catanban mi történik, ha 7-est dobok?",
+      "gold": { "game": "Catan", "section": "jatekmenet" },
+      "note": "rerank-próba: a '7-es dobás' és a 'rabló mozgatása' más szavakkal beszél"
+    },
+    {
+      "id": "carcassonne-city",
+      "type": "positive",
+      "question": "Carcassonne-ban hogyan pontozódik egy befejezetlen város a játék végén?",
+      "gold": { "game": "Carcassonne", "section": "jatekmenet" },
+      "note": "befejezett vs. befejezetlen — közeli, a rerank különíti"
+    },
+    {
+      "id": "ttr-endgame",
+      "type": "positive",
+      "question": "Ticket to Ride-ban mi váltja ki az utolsó fordulót?",
+      "gold": { "game": "Ticket to Ride", "section": "jatekmenet" },
+      "note": "HyDE-próba: laikus 'utolsó forduló' vs. szabály-nyelv"
+    },
+    {
+      "id": "pandemic-lose",
+      "type": "positive",
+      "question": "Pandemicben mikor veszítjük el a játékot?",
+      "gold": { "game": "Pandemic", "section": "jatekmenet" },
+      "note": "több vereség-feltétel"
+    },
+    {
+      "id": "7wonders-science",
+      "type": "positive",
+      "question": "7 Wondersben hogyan pontozódnak a tudomány (science) szimbólumok?",
+      "gold": { "game": "7 Wonders", "section": "jatekmenet" },
+      "note": "képlet-jellegű szabály"
+    },
+    {
+      "id": "azul-floor",
+      "type": "positive",
+      "question": "Azulban mi történik, ha egy mintasorba nem fér több csempe?",
+      "gold": { "game": "Azul", "section": "jatekmenet" },
+      "note": "élhelyzet: padló-sor (büntetés)"
+    },
+    {
+      "id": "splendor-win",
+      "type": "positive",
+      "question": "Splendorban hány presztízspont kell a győzelemhez?",
+      "gold": { "game": "Splendor", "section": "jatekmenet" },
+      "note": "konkrét szám-visszaadás"
+    },
+    {
+      "id": "kot-leave-tokyo",
+      "type": "positive",
+      "question": "King of Tokyóból mikor és hogyan léphetek ki Tokióból?",
+      "gold": { "game": "King of Tokyo", "section": "jatekmenet" },
+      "note": "fajspecifikus szabály; több kockás játék van a korpuszban"
+    },
+    {
+      "id": "neg-gloomhaven",
+      "type": "negative",
+      "question": "Hogyan kell játszani a Gloomhavennel?",
+      "gold": null,
+      "note": "létező játék, de NINCS a korpuszban — az agentnek ki kell mondania"
+    },
+    {
+      "id": "neg-catan-weight",
+      "type": "negative",
+      "question": "Catanban hány kilogramm a doboz súlya pontosan 5 játékos esetén?",
+      "gold": null,
+      "note": "témán belülinek tűnő, de lefedetlen/abszurd adat — forráskitalálás tilos"
+    }
+  ]
+}

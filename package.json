@@ -14,6 +14,7 @@
     "cli": "tsx src/cli.ts",
     "debug:sources": "tsx src/cli.ts debug:sources",
     "debug:search": "tsx src/cli.ts debug:search",
+    "eval:golden-set": "tsx src/eval/run-golden-set.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",

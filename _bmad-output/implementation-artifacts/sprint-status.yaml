@@ -66,6 +66,6 @@ development_status:
 
   epic-3: in-progress
   3-1-debug-parancsok-es-trace: done
-  3-2-golden-set: ready-for-dev
+  3-2-golden-set: done
   3-3-koltseg-naplozas: backlog
   epic-3-retrospective: optional
