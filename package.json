@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "ingest": "tsx src/ingest/ingest.ts",
     "cli": "tsx src/cli.ts",
+    "debug:sources": "tsx src/cli.ts debug:sources",
+    "debug:search": "tsx src/cli.ts debug:search",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
