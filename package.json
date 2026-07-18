@@ -21,6 +21,7 @@
     "db:schema": "docker compose exec -T db psql -v ON_ERROR_STOP=1 -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.16",
     "@ai-sdk/openai": "^4.0.16",
     "ai": "^7.0.31",
     "dotenv": "^17.4.2",
