@@ -1,7 +1,7 @@
 import type { Config } from '../config';
 import { createOpenAIEmbedBatch, embedTexts } from './embed';
 import { createOpenAIHydeGenerate, generateHyde, type HydeResult } from './hyde';
-import { createAnthropicRerankGenerate, rerankChunks, type RerankResult } from './rerank';
+import { createRerankGenerate, rerankChunks, type RerankResult } from './rerank';
 import { createPgDb, createStore, type SearchHit, type Store } from './store';
 
 /** Egy felszínre került forrás (grounding: játék + szakasz + source-URL). */
@@ -156,7 +156,7 @@ export async function retrieve(
 export function createRetrieveDeps(config: Config, store: Store): RetrieveDeps {
   const embedBatch = createOpenAIEmbedBatch(config);
   const hydeGenerate = createOpenAIHydeGenerate(config);
-  const rerankGenerate = createAnthropicRerankGenerate(config);
+  const rerankGenerate = createRerankGenerate(config);
   return {
     hyde: (question) => generateHyde(question, { generate: hydeGenerate }),
     embed: (texts) => embedTexts(texts, { embedBatch, dimensions: config.embeddingDimensions }),

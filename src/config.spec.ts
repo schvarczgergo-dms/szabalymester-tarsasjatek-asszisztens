@@ -32,6 +32,24 @@ describe('loadConfig', () => {
     expect(config.answerModel).toBe('claude-opus-4-8');
   });
 
+  it('a rerank/válasz provider alapból anthropic, env-ből openai-ra váltható (lokális mód)', () => {
+    expect(loadConfig(validEnv).rerankProvider).toBe('anthropic');
+    expect(loadConfig(validEnv).answerProvider).toBe('anthropic');
+    const local = loadConfig({ ...validEnv, RERANK_PROVIDER: 'openai', ANSWER_PROVIDER: 'openai' });
+    expect(local.rerankProvider).toBe('openai');
+    expect(local.answerProvider).toBe('openai');
+  });
+
+  it('érvénytelen provider-értéket elutasít', () => {
+    expect(() => loadConfig({ ...validEnv, RERANK_PROVIDER: 'gemini' })).toThrowError(ConfigError);
+  });
+
+  it('a base-URL override-ot beolvassa (lokális Ollama)', () => {
+    const config = loadConfig({ ...validEnv, OPENAI_BASE_URL: 'http://localhost:11434/v1' });
+    expect(config.openaiBaseUrl).toBe('http://localhost:11434/v1');
+    expect(loadConfig(validEnv).openaiBaseUrl).toBeUndefined();
+  });
+
   it('a numerikus paramétereket stringből számmá konvertálja', () => {
     const config = loadConfig({ ...validEnv, WIDE_NET: '30', KEEP_TOP: '7' });
     expect(config.wideNet).toBe(30);
