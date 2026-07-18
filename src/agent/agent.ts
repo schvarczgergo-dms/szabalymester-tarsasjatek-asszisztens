@@ -33,9 +33,11 @@ export async function askRules(
   deps: RetrieveDeps,
 ): Promise<AgentAnswer> {
   const providers = createProviders(config);
+  // OpenAI-oldalon a Chat Completions API (Ollama-kompatibilis a tool-loopban; a Responses API
+  // `item_reference` elemeit az Ollama nem támogatja). Valós OpenAI-jal is működik.
   const model =
     config.answerProvider === 'openai'
-      ? providers.openai(config.answerModel)
+      ? providers.openai.chat(config.answerModel)
       : providers.anthropic(config.answerModel);
 
   const reports: ToolOutcome[] = [];
