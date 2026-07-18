@@ -20,12 +20,16 @@
     "db:schema": "docker compose exec -T db psql -v ON_ERROR_STOP=1 -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.16",
+    "ai": "^7.0.31",
     "dotenv": "^17.4.2",
+    "pg": "^8.22.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.5",

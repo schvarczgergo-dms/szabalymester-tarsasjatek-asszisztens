@@ -1,10 +1,10 @@
 ---
-baseline_commit: bd6201c
+baseline_commit: 61d17ab
 ---
 
 # Story 1.5: Embedding és tárolás
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -22,31 +22,31 @@ so that a chunkok kereshetően, a modellel egyező dimenzióban kerülnek pgvect
 
 ## Tasks / Subtasks
 
-- [ ] **T1: Függőségek felvétele** (AC: 1, 3) — UPDATE `package.json`
-  - [ ] `ai` (Vercel AI SDK v7) + `@ai-sdk/openai` (embedding-porthoz) — a spine Stack szerinti verziók.
-  - [ ] `pg` (node-postgres) + `@types/pg` (devDependency) — paraméterezett SQL, tranzakció; nincs ORM (spine).
-  - [ ] `pnpm install` fut, a lockfile frissül.
-- [ ] **T2: `src/rag/embed.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 1, 2, 5)
-  - [ ] batch-darabolás: 250 szöveg → 3 hívás (100+100+50); a kimeneti sorrend = a bemeneti sorrend.
-  - [ ] dimenzió-guard: a `config.embeddingDimensions`-től eltérő hosszú vektor beszédes hibát dob.
-  - [ ] a modellnév a `config`-ból jön (injektált fake embedder megkapja); üres input → üres kimenet, 0 hívás.
-- [ ] **T3: `src/rag/embed.ts` — implementáció (GREEN)** (AC: 1, 2)
-  - [ ] `embedTexts(texts, deps) → { vectors: number[][]; usage }`; `deps` = `{ model, embedMany }` (a valós `embedMany` az `ai`-ból, default; teszthez injektálható fake).
-  - [ ] ≤100-as batch; minden batch után dimenzió-assert (`vector.length === config.embeddingDimensions`), eltérésnél `EmbedError` (magyar).
-  - [ ] a `usage` (token) visszaadva a hívónak (AD-11 előkészítés; a naplózás Story 1.6/3.3).
-- [ ] **T4: `src/rag/store.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 3, 4, 5)
-  - [ ] pgvector-literál: `number[] → '[0.1,0.2,…]'` formázás (unit).
-  - [ ] tranzakció-vezérlés fake klienssel: `insert` → `BEGIN` … `COMMIT`; a chunkok a dokumentum-sor UTÁN íródnak; a művelet közbeni hibánál `ROLLBACK` és a hiba tovább dobódik.
-  - [ ] upsert: meglévő `source` esetén a régi chunkok törlő SQL-je lefut az újraírás előtt (a fake kliens rögzíti a hívássorrendet).
-  - [ ] `search`/`list`/`delete` a helyes paraméterezett SQL-t adják (paraméterek a `$1,$2…` helyőrzőkön, nem interpolálva).
-- [ ] **T5: `src/rag/store.ts` — implementáció (GREEN)** (AC: 3, 4)
-  - [ ] Egy `Pool`/`Client` port (interfész: `query`, tranzakcióhoz `connect`); a valós `pg.Pool` a `config.databaseUrl`-ből, teszthez injektálható fake.
-  - [ ] `insert(doc, chunks, client)`: `BEGIN` → upsert `knowledge_documents` (`source` UNIQUE-ra) → régi chunkok törlése → chunkok beszúrása (`content`, `heading`, `chunk_index`, `embedding::vector`) → `chunk_count`/`indexed_at` frissítés → `COMMIT`; hibán `ROLLBACK`.
-  - [ ] `search(embedding, topK)`: `ORDER BY embedding <=> $1 LIMIT $2`, JOIN `knowledge_documents`-re a forrás-payloadért, `WHERE d.status = 'active'`.
-  - [ ] `list()`: dokumentumok `source, game, section, chunk_count, status`; `delete(source)`: dokumentum-törlés → CASCADE.
-- [ ] **T6: Zöld-kapu** (AC: 5) — `pnpm test` (a meglévő 42 + újak) + `pnpm typecheck · lint · format:check` zöld.
-- [ ] **T7 (opcionális): Élő DB-verifikáció szintetikus vektorral** (AC: 3, 4) — kulcs nélkül
-  - [ ] `docker compose up -d` (a DB a Story 1.2-ből fut); egy szintetikus 1536-dim vektorral (`array_fill`-szerű) `insert` → `search` visszaadja → `list` mutatja a `chunk_count`-ot → `delete` CASCADE (chunk-szám 0). NEM hív OpenAI-t.
+- [x] **T1: Függőségek felvétele** (AC: 1, 3) — UPDATE `package.json`
+  - [x] `ai` (Vercel AI SDK v7 → `7.0.31`) + `@ai-sdk/openai` (`4.0.16`, embedding-porthoz).
+  - [x] `pg` (`8.22.0`) + `@types/pg` (`8.20.0`, devDependency) — paraméterezett SQL, tranzakció; nincs ORM (spine).
+  - [x] `pnpm install` fut, a lockfile frissül.
+- [x] **T2: `src/rag/embed.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 1, 2, 5)
+  - [x] batch-darabolás: 250 szöveg → 3 hívás (100+100+50); a kimeneti sorrend = a bemeneti sorrend.
+  - [x] dimenzió-guard: a `config.embeddingDimensions`-től eltérő hosszú vektor beszédes hibát dob.
+  - [x] a modellnév a `config`-ból jön (injektált fake embedder megkapja); üres input → üres kimenet, 0 hívás.
+- [x] **T3: `src/rag/embed.ts` — implementáció (GREEN)** (AC: 1, 2)
+  - [x] `embedTexts(texts, deps) → { vectors: number[][]; usage }`; `deps` = injektálható `embedBatch` (a valós OpenAI `embedMany`-t a `createOpenAIEmbedBatch(config)` factory adja).
+  - [x] ≤100-as batch; minden batch után dimenzió-assert (`vector.length === config.embeddingDimensions`), eltérésnél `EmbedError` (magyar). `checkEmbeddingDimensions` a séma vs. konfiguráció fail-fast (AD-3).
+  - [x] a `usage` (token) aggregálva visszaadva a hívónak (AD-11 előkészítés; a naplózás Story 1.6/3.3).
+- [x] **T4: `src/rag/store.spec.ts` — előbb a tesztek (TDD, RED)** (AC: 3, 4, 5)
+  - [x] pgvector-literál: `number[] → '[0.1,0.2,…]'` formázás (unit).
+  - [x] tranzakció-vezérlés fake klienssel: `insert` → `BEGIN` … `COMMIT`; a chunkok a dokumentum-sor UTÁN íródnak; a művelet közbeni hibánál `ROLLBACK` és a hiba tovább dobódik.
+  - [x] upsert: meglévő `source` esetén a régi chunkok törlő SQL-je lefut az újraírás előtt (a fake kliens rögzíti a hívássorrendet).
+  - [x] `search`/`list`/`delete` a helyes paraméterezett SQL-t adják (paraméterek a `$1,$2…` helyőrzőkön, nem interpolálva).
+- [x] **T5: `src/rag/store.ts` — implementáció (GREEN)** (AC: 3, 4)
+  - [x] `Db`/`DbClient` port (`query`, tranzakcióhoz `connect`); a valós `pg.Pool`-t a `createPgDb(databaseUrl)` adapter adja, teszthez injektálható fake.
+  - [x] `insert(doc, chunks)`: dimenzió-guard (DB-nyitás ELŐTT) → `BEGIN` → upsert `knowledge_documents` (`ON CONFLICT (source)`) → régi chunkok törlése → chunkok beszúrása (`embedding::vector`) → `chunk_count`/`indexed_at` frissítés (az upsertben) → `COMMIT`; hibán `ROLLBACK` + `release`.
+  - [x] `search(embedding, topK)`: `ORDER BY embedding <=> $1::vector LIMIT $2`, JOIN `knowledge_documents`-re a forrás-payloadért, `WHERE d.status = 'active'`.
+  - [x] `list()`: dokumentumok `source, title, game, section, chunk_count, status`; `delete(source)`: dokumentum-törlés → CASCADE.
+- [x] **T6: Zöld-kapu** (AC: 5) — `pnpm test` (42 → 58) + `pnpm typecheck · lint · format:check` zöld.
+- [x] **T7 (opcionális): Élő DB-verifikáció szintetikus vektorral** (AC: 3, 4) — kulcs nélkül
+  - [x] a futó DB-n (Story 1.2) szintetikus 1536-dim vektorral: `insert` (dok + 2 chunk egy tranzakcióban) → `search` 2 találat helyes payloaddal → `list` `chunk_count=2` → `delete` → CASCADE chunk-szám 2→0. NEM hívott OpenAI-t.
 
 ## Dev Notes
 
@@ -100,10 +100,32 @@ so that a chunkok kereshetően, a modellel egyező dimenzióban kerülnek pgvect
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból (Claude Code limit után folytatva).
+
 ### Debug Log References
+
+- RED: `pnpm test src/rag/embed.spec.ts` és `.../store.spec.ts` az implementáció előtt → import bukik ("no tests").
+- GREEN: `embed.spec.ts` 7/7, `store.spec.ts` 9/9; teljes csomag 42 → **58** teszt zöld.
+- Zöld-kapu: `pnpm typecheck` OK, `pnpm lint` OK, `pnpm format:check` OK (a 4 új fájl `pnpm format`-tal formázva).
+- T7 élő DB (szintetikus 1536-dim vektor, OpenAI nélkül): `INSERT → {documentId, chunkCount:2}`, `SEARCH` 2 találat, `LIST` `chunk_count:2`, `DELETE` → chunk-szám 2→0 (CASCADE). Ideiglenes verify-szkript futtatás után törölve.
 
 ### Completion Notes List
 
+- `src/rag/embed.ts`: `embedTexts(texts, deps)` tiszta batchelő (≤100), sorrendtartó, per-vektor dimenzió-guard (`EmbedError`), usage-aggregálás. `checkEmbeddingDimensions` a séma (`SCHEMA_VECTOR_DIM=1536`) vs. konfiguráció fail-fast (AD-3). `createOpenAIEmbedBatch(config)` a valós `embedMany` + `openai.embedding(config.embeddingModel)` köré (a modellnév csak configból — AD-6); a hálózati rész vékony factory, nem unit-tesztelt.
+- `src/rag/store.ts`: `Db`/`DbClient` port + `createPgDb(databaseUrl)` `pg.Pool`-adapter. `createStore(db, {dimensions})`: `insert` egy tranzakcióban (dimenzió-guard a DB-nyitás előtt; `BEGIN`→upsert dok `ON CONFLICT(source)`→régi chunkok törlése→chunkok→`COMMIT`; hibán `ROLLBACK`+`release`), `search` koszinusz `<=>` csak `active` dokumentumokon forrás-payloaddal, `list`, `delete` (CASCADE). Minden mutáció paraméterezett SQL, a vektor `$n::vector` literálként.
+- **Döntés:** pg-kliens = `pg` (node-postgres) — mainstream, paraméterezett SQL, `pool.connect()` tranzakcióhoz; a spine „nincs ORM" kényszere teljesül.
+- **AD-3 fail-fast** (halasztva a Story 1.2 review-ból) megvalósítva: kétszintű — konfiguráció↔séma (`checkEmbeddingDimensions`) + modell-kimenet↔konfiguráció (embed) + store-beírás↔konfiguráció (`assertDimensions`).
+- Scope tartva: nincs inkrementális/hash-kihagyás, `--rebuild`, cron, usage-naplózás (Story 1.6); nincs HyDE/rerank/retrieve (Story 2.1).
+
 ### File List
 
+- `src/rag/embed.ts` (új)
+- `src/rag/embed.spec.ts` (új)
+- `src/rag/store.ts` (új)
+- `src/rag/store.spec.ts` (új)
+- `package.json` (módosítva — `ai`, `@ai-sdk/openai`, `pg` deps + `@types/pg` devDep)
+- `pnpm-lock.yaml` (módosítva — új függőségek)
+
 ### Change Log
+
+- 2026-07-18: Story 1.5 implementálva — `rag/embed` (batch + dimenzió-guard + usage) és `rag/store` (tranzakciós insert/search/list/delete, pgvector), TDD 16 új teszt (42→58), élő DB-verifikáció szintetikus vektorral. Status → review.
