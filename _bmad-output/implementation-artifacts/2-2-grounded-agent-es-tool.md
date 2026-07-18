@@ -1,10 +1,10 @@
 ---
-baseline_commit: 0700cdd
+baseline_commit: aa6265a
 ---
 
 # Story 2.2: Grounded agent és `searchRules` tool
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -38,7 +38,12 @@ so that megbízhatóan eldönthetem a szabályhelyzetet, és tudom, ha valamirő
   - [ ] `createAgent(config)` / `askRules(question, deps) → { answer, sources, reports, usage }`: `generateText({ model: provider(answerModel), system, prompt, tools: { searchRules }, stopWhen: stepCountIs(MAX_STEPS) })`.
   - [ ] A `report`-okat (trace) gyűjti; a usage-t aggregálja (válasz + retrieval, AD-11).
   - [ ] Teszt: az `onReport`/gyűjtés és a usage-aggregálás egy injektált fake tool-lal (a `generateText` élő/CLI — nem unit).
-- [ ] **T5: Zöld-kapu** (AC: 7) — `pnpm test` + `typecheck · lint · format:check` zöld.
+- [x] **T1** `tool-outcome.ts` — `ToolOutcome` + `TraceEntry` Zod (AD-8).
+- [x] **T2** `search-rules-tool.ts` (+spec) — `executeSearchRules` (ok/üres/hiba/rossz input, sosem dob) + `createSearchRulesTool` (AI SDK `tool`, `onReport` mellékcsatorna).
+- [x] **T3** `prompt.ts` (+spec) — `<grounding>` system prompt (magyar válasz, forrás, „nincs információm").
+- [x] **T4** `agent.ts` (+spec) — `askRules`/`createAgent` (`generateText` + `tools` + `stepCountIs`), `aggregateUsage` (AD-11).
+- [x] **T5: Zöld-kapu** — `pnpm test` (156, +11 új) + `typecheck · lint · format:check` zöld.
+- [x] **Éles teszt (Ollama):** a loop meghívta a toolt, forrásokat kapott, magyar választ adott — DE a `qwen2.5:3b` nem tartotta be a groundingot (kitalált szabály + hamis URL; a negatív teszt hallucinált). Lásd Completion Notes: a grounding minősége **modell-erő függő** (a kód helyes, unit-tesztelt).
 
 ## Dev Notes
 
@@ -79,10 +84,31 @@ so that megbízhatóan eldönthetem a szabályhelyzetet, és tudom, ha valamirő
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- Unit: `agent/` 11 új teszt (executeSearchRules ok/üres/hiba/rossz-input, prompt grounding, aggregateUsage); teljes csomag 156 (155 pass + 1 skip).
+- Kapu: typecheck · lint · format:check zöld.
+- Éles teszt (Ollama, qwen2.5:3b): loop → tool-hívás (status ok) → magyar válasz; usage ~7850 token/kérdés.
 
 ### Completion Notes List
 
+- `src/agent/tool-outcome.ts`: közös `ToolOutcome` (`status`+`content`+`report: TraceEntry`) Zod-típus (AD-8).
+- `src/agent/search-rules-tool.ts`: `executeSearchRules` (a retrieval köré, SOHA nem dob — üres→empty, hiba/rossz input→error, magyar `content`); `createSearchRulesTool` (AI SDK `tool`, a modell CSAK a `content`-et látja, a `report` az `onReport` mellékcsatornán — AD-8).
+- `src/agent/prompt.ts`: `<grounding>` system prompt (magyar válasz, kötelező forrás, üres→„nincs információm").
+- `src/agent/agent.ts`: `askRules`/`createAgent` tool-use loop (`generateText` + `tools` + `stopWhen: stepCountIs(5)`); a válasz-modell `config.answerProvider`/`answerModel` (élesben Anthropic, lokálisan Ollama); `aggregateUsage` (AD-11).
+- **KRITIKUS FELISMERÉS (éles teszt):** a determinisztikus logika helyes és unit-tesztelt, DE a **grounding minősége modell-erő függő**. A `qwen2.5:3b` a groundingot NEM tartotta be: kitalált szabályt + hamis URL-t adott, és a negatív tesztnél (Gloomhaven) hallucinált a „nincs információm" helyett. A HF3 grounding-követelményéhez **erős válasz-modell** kell (élesben Claude Sonnet; lokálisan legfeljebb qwen3.5, korlátozottan).
+- **Javasolt kód-szintű védelem (deferred, golden-set hangolja):** relevancia/távolság-küszöb a retrievalben → gyenge találatnál `empty`, hogy az absztenció modell-függetlenül is működjön.
+- Scope: nincs CLI (2.3), nincs golden-set (3.2), nincs debug-parancs (3.1).
+
 ### File List
 
+- `src/agent/tool-outcome.ts` (új)
+- `src/agent/search-rules-tool.ts` (+ `search-rules-tool.spec.ts`) (új)
+- `src/agent/prompt.ts` (+ `prompt.spec.ts`) (új)
+- `src/agent/agent.ts` (+ `agent.spec.ts`) (új)
+
 ### Change Log
+
+- 2026-07-18: Story 2.2 implementálva — grounded agent + `searchRules` tool (ToolOutcome/AD-8, `<grounding>` prompt, tool-use loop, usage-aggregálás), TDD 11 új teszt. Éles teszt: a lánc működik, de a grounding minőség 3B modellen gyenge (dokumentálva). Status → review.

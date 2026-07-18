@@ -60,7 +60,7 @@ development_status:
 
   epic-2: in-progress
   2-1-keresesi-pipeline: done
-  2-2-grounded-agent-es-tool: ready-for-dev
+  2-2-grounded-agent-es-tool: review
   2-3-cli-belepopont: backlog
   epic-2-retrospective: optional
 
