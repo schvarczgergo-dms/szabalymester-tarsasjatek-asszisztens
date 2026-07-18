@@ -46,6 +46,12 @@ describe('parseDocument', () => {
     );
     expect(parseDocument(withComment).frontMatter.section).toBe('elokeszules');
   });
+
+  it('üres törzsre (csak front matter) ParseError', () => {
+    expect(() =>
+      parseDocument('---\ntitle: x\ngame: y\nsource: s\nsection: gyik\n---\n'),
+    ).toThrowError(ParseError);
+  });
 });
 
 describe('normalize', () => {
@@ -87,6 +93,12 @@ describe('normalize', () => {
   it('determinisztikus', () => {
     expect(normalize(validDoc)).toBe(normalize(validDoc));
   });
+
+  it('a két kép közti szöveget megtartja (non-greedy kép-szűrés)', () => {
+    expect(normalize(wrap('![a](x.png) Dobj a kockával ![b](y.png)\n'))).toContain(
+      'Dobj a kockával',
+    );
+  });
 });
 
 describe('contentHash', () => {
@@ -100,5 +112,13 @@ describe('contentHash', () => {
       normalize(validDoc.replace('Keverd meg a lapokat.', 'Keverd meg 2 lapot.')),
     );
     expect(changed).not.toBe(base);
+  });
+
+  it('kiadói-sor hozzáadására a hash nem változik', () => {
+    const base = contentHash(normalize(validDoc));
+    const withNoise = contentHash(
+      normalize(validDoc.replace('Keverd meg a lapokat.', 'Keverd meg a lapokat.\n© 2020 Kiadó')),
+    );
+    expect(withNoise).toBe(base);
   });
 });

@@ -34,15 +34,22 @@ const frontMatterSchema = z.object({
   section: z.enum(SECTIONS),
 });
 
-/** A vezető `---\n…\n---\n` front matter blokk + a maradék törzs. */
-const FRONT_MATTER_RE = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/;
+/** A vezető `---…---` front matter blokk + a maradék törzs (a delimiter-sor trailing WS-t tűr). */
+const FRONT_MATTER_RE = /^---[ \t]*\n([\s\S]*?)\n---[ \t]*\n?([\s\S]*)$/;
 
-/** Determinisztikus zaj-minták (kiadói/jogi sor, kiadói URL); a csak-illusztráció sort külön kezeljük. */
-const NOISE_PATTERNS: RegExp[] = [/©/, /minden jog fenntartva/i, /gemklub\.hu/i];
+/** Determinisztikus zaj-minták — csak NOTICE-szerű sorra illeszkednek (sor eleji / teljes-soros
+ *  horgonnyal), hogy a `©`/`gemklub.hu` szöveget tartalmazó legitim szabály-sor ne essen ki. */
+const NOISE_PATTERNS: RegExp[] = [
+  /^©/, // copyright-sor (© jellel kezdődik)
+  /^copyright\b/i,
+  /^minden jog fenntartva/i,
+  /^(https?:\/\/)?(www\.)?gemklub\.hu[\w./-]*$/i, // csak kiadói-URL sor
+];
 
 function isNoiseLine(line: string): boolean {
   const trimmed = line.trim();
-  if (/^!\[.*\]\(.*\)$/.test(trimmed)) return true; // csak-illusztráció sor
+  // Tisztán EGYETLEN illusztráció-sor (non-greedy, hogy a két kép közti szöveget ne nyelje el).
+  if (/^!\[[^\]]*\]\([^)]*\)$/.test(trimmed)) return true;
   return NOISE_PATTERNS.some((re) => re.test(trimmed));
 }
 
@@ -58,9 +65,9 @@ function stripFrontMatter(lf: string): string {
 }
 
 /**
- * A hash és a chunker EGYETLEN közös forrása (AD-5): front-matter-strip → zaj-szűrés →
- * `\r\n`→`\n` → soronkénti trailing-WS trim → 3+ üres sor összevonása → záró trim.
- * Kisbetűsítés NÉLKÜL. Tiszta, determinisztikus függvény.
+ * A hash és a chunker EGYETLEN közös forrása (AD-5). Lépések: `\r\n`/`\r`→`\n` →
+ * front-matter-strip → zaj-szűrés → soronkénti trailing-WS trim → 2+ üres sor egyre
+ * vonása → záró trim. Kisbetűsítés NÉLKÜL. Tiszta, determinisztikus függvény.
  */
 export function normalize(raw: string): string {
   const body = stripFrontMatter(toLf(raw));
@@ -115,13 +122,22 @@ export function parseDocument(raw: string): ParsedDocument {
     throw new ParseError('Hiányzó front matter — a dokumentum nem `---` blokkal kezdődik.');
   }
 
-  const parsed = frontMatterSchema.safeParse(parseFrontMatterBlock(match[1] ?? ''));
+  const block = parseFrontMatterBlock(match[1] ?? '');
+  const parsed = frontMatterSchema.safeParse(block);
   if (!parsed.success) {
     const fields = parsed.error.issues
       .map((issue) => `${issue.path.join('.') || '(gyökér)'}: ${issue.message}`)
       .join('; ');
-    throw new ParseError(`Érvénytelen front matter: ${fields}`);
+    const src = block.source ? ` (${block.source})` : '';
+    throw new ParseError(`Érvénytelen front matter${src}: ${fields}`);
   }
 
-  return { frontMatter: parsed.data, body: normalize(raw) };
+  const body = normalize(raw);
+  if (body === '') {
+    throw new ParseError(
+      'Üres törzs — a dokumentumnak nincs érdemi tartalma (csak front matter vagy zaj).',
+    );
+  }
+
+  return { frontMatter: parsed.data, body };
 }
