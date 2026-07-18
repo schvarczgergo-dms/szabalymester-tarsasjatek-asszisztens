@@ -1,0 +1,5 @@
+# Egységes LF sorvégek minden szöveges fájlon (Windows autocrlf ↔ Prettier LF béke).
+* text=auto eol=lf
+
+# Bináris — ne normalizálja a git.
+*.png binary

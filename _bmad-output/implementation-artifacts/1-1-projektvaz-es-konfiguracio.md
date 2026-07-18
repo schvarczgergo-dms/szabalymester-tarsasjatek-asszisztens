@@ -1,6 +1,10 @@
+---
+baseline_commit: bfe0c2fdfc6c5d8d2cce323ab2c6f93c71f0acae
+---
+
 # Story 1.1: Projektváz és fail-fast konfiguráció
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -18,29 +22,29 @@ so that a rendszer determinisztikusan és biztonságosan indul, és a többi sto
 
 ## Tasks / Subtasks
 
-- [ ] **T1: Projekt-init és package.json** (AC: 1)
-  - [ ] `package.json`: `"type": "module"`, `"packageManager": "pnpm@11.x"`, `engines.node >= 20`.
-  - [ ] Scriptek: `typecheck` (`tsc --noEmit`), `test` (`vitest run`), `test:watch` (`vitest`), `lint` (`eslint .`), `format` (`prettier --write .`), `format:check` (`prettier --check .`), `db:up` (`docker compose up -d`), `db:down` (`docker compose down`).
-- [ ] **T2: TypeScript strict tsconfig** (AC: 1)
-  - [ ] `target ES2023`, `module ESNext`, `moduleResolution Bundler`, `types: ["node"]`, `strict: true`, `noUncheckedIndexedAccess: true`, `verbatimModuleSyntax: true`, `noEmit: true`, `skipLibCheck: true`; `include: ["src", "vitest.config.ts"]`.
-- [ ] **T3: Függőségek telepítése** (AC: 1)
-  - [ ] runtime: `zod`, `dotenv`.
-  - [ ] dev: `typescript@5` (**FONTOS: pinneld 5.x-re**), `tsx`, `vitest`, `@types/node`, `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-config-prettier`, `prettier`.
-  - [ ] `pnpm-workspace.yaml`: `allowBuilds:\n  esbuild: true` majd `pnpm install` (az esbuild build-scriptje kell a tsx/vitest-hez).
-- [ ] **T4: Vitest + ESLint(flat) + Prettier konfiguráció** (AC: 1)
-  - [ ] `vitest.config.ts`: `test.include: ['src/**/*.spec.ts']`, `environment: 'node'`, `globals: false`.
-  - [ ] `eslint.config.mjs` (flat): `@eslint/js` recommended + `typescript-eslint` recommended + `eslint-config-prettier`; `@typescript-eslint/no-unused-vars` `argsIgnorePattern`/`varsIgnorePattern`/`caughtErrorsIgnorePattern: '^_'`; ignores `dist/ node_modules/ coverage/`.
-  - [ ] `.prettierrc.json` (semi, singleQuote, trailingComma all, printWidth 100); `.prettierignore` kizárja: `*.md`, `_bmad/`, `_bmad-output/`, `.claude/skills/`, `pnpm-lock.yaml`, `dist/`, `coverage/`, `node_modules/`.
-- [ ] **T5: docker-compose + .env.example + .gitattributes** (AC: 2, 3)
-  - [ ] `docker-compose.yml`: `pgvector/pgvector:pg17`, `container_name: szabalymester-db`, env `POSTGRES_USER/PASSWORD/DB` (alap: `szabalymester`), port `${POSTGRES_PORT:-5432}:5432`, named volume `pgdata`, `pg_isready` healthcheck.
-  - [ ] `.env.example`: kötelező kulcsok + `DATABASE_URL` + a modell-defaultok + pipeline-paraméterek (ld. Dev Notes).
-  - [ ] `.gitattributes`: `* text=auto eol=lf` és `*.png binary`.
-- [ ] **T6: config.ts (Zod, fail-fast, lazy)** (AC: 3, 4)
-  - [ ] `loadConfig(env = process.env): Config` — **lazy** (NEM top-level singleton), hogy a teszt izoláltan, valós kulcs nélkül fusson; `ConfigError extends Error`.
-- [ ] **T7: config.spec.ts (8 teszt)** (AC: 5)
-  - [ ] érvényes env; alapértelmezések; modellnév-felülírás; numerikus konverzió (`WIDE_NET`/`KEEP_TOP`); hiányzó kulcs → `ConfigError` + a változó neve; üres kulcs → hiba; érvénytelen numerikus → hiba; nem-pozitív paraméter → hiba.
-- [ ] **T8: Zöld-kapu** (AC: 1, 2)
-  - [ ] `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test` zöld; `docker compose config -q` OK.
+- [x] **T1: Projekt-init és package.json** (AC: 1)
+  - [x] `package.json`: `"type": "module"`, `"packageManager": "pnpm@11.x"`, `engines.node >= 20`.
+  - [x] Scriptek: `typecheck` (`tsc --noEmit`), `test` (`vitest run`), `test:watch` (`vitest`), `lint` (`eslint .`), `format` (`prettier --write .`), `format:check` (`prettier --check .`), `db:up` (`docker compose up -d`), `db:down` (`docker compose down`).
+- [x] **T2: TypeScript strict tsconfig** (AC: 1)
+  - [x] `target ES2023`, `module ESNext`, `moduleResolution Bundler`, `types: ["node"]`, `strict: true`, `noUncheckedIndexedAccess: true`, `verbatimModuleSyntax: true`, `noEmit: true`, `skipLibCheck: true`; `include: ["src", "vitest.config.ts"]`.
+- [x] **T3: Függőségek telepítése** (AC: 1)
+  - [x] runtime: `zod`, `dotenv`.
+  - [x] dev: `typescript@5` (**FONTOS: pinneld 5.x-re**), `tsx`, `vitest`, `@types/node`, `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-config-prettier`, `prettier`.
+  - [x] `pnpm-workspace.yaml`: `allowBuilds:\n  esbuild: true` majd `pnpm install` (az esbuild build-scriptje kell a tsx/vitest-hez).
+- [x] **T4: Vitest + ESLint(flat) + Prettier konfiguráció** (AC: 1)
+  - [x] `vitest.config.ts`: `test.include: ['src/**/*.spec.ts']`, `environment: 'node'`, `globals: false`.
+  - [x] `eslint.config.mjs` (flat): `@eslint/js` recommended + `typescript-eslint` recommended + `eslint-config-prettier`; `@typescript-eslint/no-unused-vars` `argsIgnorePattern`/`varsIgnorePattern`/`caughtErrorsIgnorePattern: '^_'`; ignores `dist/ node_modules/ coverage/`.
+  - [x] `.prettierrc.json` (semi, singleQuote, trailingComma all, printWidth 100); `.prettierignore` kizárja: `*.md`, `_bmad/`, `_bmad-output/`, `.claude/skills/`, `pnpm-lock.yaml`, `dist/`, `coverage/`, `node_modules/`.
+- [x] **T5: docker-compose + .env.example + .gitattributes** (AC: 2, 3)
+  - [x] `docker-compose.yml`: `pgvector/pgvector:pg17`, `container_name: szabalymester-db`, env `POSTGRES_USER/PASSWORD/DB` (alap: `szabalymester`), port `${POSTGRES_PORT:-5432}:5432`, named volume `pgdata`, `pg_isready` healthcheck.
+  - [x] `.env.example`: kötelező kulcsok + `DATABASE_URL` + a modell-defaultok + pipeline-paraméterek (ld. Dev Notes).
+  - [x] `.gitattributes`: `* text=auto eol=lf` és `*.png binary`.
+- [x] **T6: config.ts (Zod, fail-fast, lazy)** (AC: 3, 4)
+  - [x] `loadConfig(env = process.env): Config` — **lazy** (NEM top-level singleton), hogy a teszt izoláltan, valós kulcs nélkül fusson; `ConfigError extends Error`.
+- [x] **T7: config.spec.ts (8 teszt)** (AC: 5)
+  - [x] érvényes env; alapértelmezések; modellnév-felülírás; numerikus konverzió (`WIDE_NET`/`KEEP_TOP`); hiányzó kulcs → `ConfigError` + a változó neve; üres kulcs → hiba; érvénytelen numerikus → hiba; nem-pozitív paraméter → hiba.
+- [x] **T8: Zöld-kapu** (AC: 1, 2)
+  - [x] `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test` zöld; `docker compose config -q` OK.
 
 ## Dev Notes
 
@@ -99,8 +103,39 @@ Zod-séma (kulcs → env → default). A **modell-defaultok az architektúra-spi
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`)
+
 ### Debug Log References
+
+- RED: `pnpm test` a `config.ts` létrehozása előtt — a spec importja elhasalt (várt piros).
+- GREEN: `config.ts` után 8/8 teszt zöld.
+- Zöld-kapu: `typecheck · lint · format:check · test` mind zöld; `docker compose config -q` OK; `pnpm db:up` → `szabalymester-db` healthy.
 
 ### Completion Notes List
 
+- A teljes projektváz felállt: pnpm (ESM), TypeScript **5.9** strict (a story gotcha-ja szerint pinnelve — a TS 7 töri a typescript-eslintet), Vitest 4, ESLint flat config, Prettier.
+- `esbuild` build-script engedélyezve a `pnpm-workspace.yaml` `allowBuilds`-en át (pnpm 11 tiltja alapból).
+- `config.ts`: **lazy** `loadConfig(env)` (izolált tesztelhetőség), Zod 4 (`preprocess` a kötelező mezőkre, mert a `required_error` megszűnt), fail-fast `ConfigError` a változó nevével.
+- Modell-defaultok az architektúra-spine **web-ellenőrzött** értékei: `text-embedding-3-small`, `gpt-5.4-nano`, `claude-haiku-4-5`, `claude-sonnet-5`.
+- `.gitattributes eol=lf` a Windows CRLF ↔ Prettier LF béke érdekében.
+- Mind a 8 AC teljesül; a DB valósan elindul.
+
 ### File List
+
+- `package.json` (új)
+- `pnpm-workspace.yaml` (új)
+- `pnpm-lock.yaml` (új, generált)
+- `tsconfig.json` (új)
+- `vitest.config.ts` (új)
+- `eslint.config.mjs` (új)
+- `.prettierrc.json` (új)
+- `.prettierignore` (új)
+- `docker-compose.yml` (új)
+- `.env.example` (új)
+- `.gitattributes` (új)
+- `src/config.ts` (új)
+- `src/config.spec.ts` (új)
+
+### Change Log
+
+- 2026-07-18: Story 1.1 implementálva — projektváz + fail-fast config, 8/8 teszt zöld, DB healthy. Status → review.
