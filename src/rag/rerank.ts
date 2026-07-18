@@ -76,15 +76,17 @@ export async function rerankChunks(
 }
 
 /**
- * Alapértelmezett rerank-hívás a Vercel AI SDK-ra (Anthropic `config.rerankModel`). Külön
- * providernél fut, mint a HyDE (AD-7); a modellnév kizárólag a `config`-ból (AD-6).
+ * Alapértelmezett rerank-hívás a Vercel AI SDK-ra. A providert a `config.rerankProvider` választja:
+ * éles: `anthropic` (`config.rerankModel`, külön provider a HyDE-tól — AD-7); lokálisan `openai`,
+ * ami a base-URL-lel a helyi Ollamára megy (LiteLLM nélkül). A modellnév a `config`-ból (AD-6).
  */
-export function createAnthropicRerankGenerate(config: Config): RerankGenerateFn {
-  const { anthropic } = createProviders(config);
+export function createRerankGenerate(config: Config): RerankGenerateFn {
+  const providers = createProviders(config);
+  const provider = config.rerankProvider === 'openai' ? providers.openai : providers.anthropic;
   return async ({ question, candidates }) => {
     const numbered = candidates.map((text, index) => `[${index}] ${text}`).join('\n\n');
     const { object, usage } = await generateObject({
-      model: anthropic(config.rerankModel),
+      model: provider(config.rerankModel),
       schema: rerankSchema,
       system:
         'Pontozd 0–10 skálán, mennyire válaszolja meg az egyes szövegrészletek a kérdést. ' +

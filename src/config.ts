@@ -36,6 +36,10 @@ const withDefault = (fallback: string) =>
 /** Opcionális URL (base-URL override lokális/proxy módhoz); üres/whitespace → undefined. */
 const optionalUrl = () => z.preprocess(blankToUndefined, z.string().url().optional());
 
+/** Provider-választó egy modell-szerephez (alapértelmezéssel); üres/whitespace → default. */
+const providerChoice = (fallback: 'openai' | 'anthropic') =>
+  z.preprocess(blankToUndefined, z.enum(['openai', 'anthropic']).default(fallback));
+
 /** Pozitív egész env-változó alapértelmezéssel; üres/whitespace → default. */
 const positiveInt = (fallback: number) =>
   z.preprocess(
@@ -59,7 +63,9 @@ const KEY_TO_ENV: Record<string, string> = {
   schemaVectorDim: 'SCHEMA_VECTOR_DIM',
   hydeModel: 'HYDE_MODEL',
   rerankModel: 'RERANK_MODEL',
+  rerankProvider: 'RERANK_PROVIDER',
   answerModel: 'ANSWER_MODEL',
+  answerProvider: 'ANSWER_PROVIDER',
   wideNet: 'WIDE_NET',
   keepTop: 'KEEP_TOP',
 };
@@ -84,7 +90,11 @@ const configSchema = z.object({
   schemaVectorDim: positiveInt(1536),
   hydeModel: withDefault('gpt-5.4-nano'),
   rerankModel: withDefault('claude-haiku-4-5'),
+  // Melyik provider szolgálja ki a rerank/válasz modellt. Éles: `anthropic` (spine, AD-7).
+  // Lokálisan `openai` → a base-URL-lel a helyi Ollamára megy (LiteLLM nélkül).
+  rerankProvider: providerChoice('anthropic'),
   answerModel: withDefault('claude-sonnet-5'),
+  answerProvider: providerChoice('anthropic'),
 
   // Keresési pipeline paraméterei.
   wideNet: positiveInt(20),
@@ -111,6 +121,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     embeddingDimensions: env.EMBEDDING_DIMENSIONS,
     schemaVectorDim: env.SCHEMA_VECTOR_DIM,
     hydeModel: env.HYDE_MODEL,
+    rerankProvider: env.RERANK_PROVIDER,
+    answerProvider: env.ANSWER_PROVIDER,
     rerankModel: env.RERANK_MODEL,
     answerModel: env.ANSWER_MODEL,
     wideNet: env.WIDE_NET,
