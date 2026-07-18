@@ -58,8 +58,8 @@ development_status:
   1-7-korpusz-seed: in-progress
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-keresesi-pipeline: backlog
+  epic-2: in-progress
+  2-1-keresesi-pipeline: ready-for-dev
   2-2-grounded-agent-es-tool: backlog
   2-3-cli-belepopont: backlog
   epic-2-retrospective: optional
