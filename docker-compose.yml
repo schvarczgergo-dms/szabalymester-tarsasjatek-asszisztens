@@ -11,6 +11,9 @@ services:
       - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Friss adatbázisnál az initdb automatikusan lefuttatja a sémát; meglévő
+      # kötetnél a `pnpm db:schema` alkalmazza idempotensen ugyanezt a fájlt.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
       test:
         [

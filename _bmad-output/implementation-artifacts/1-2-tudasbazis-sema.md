@@ -1,6 +1,10 @@
+---
+baseline_commit: c921eaf
+---
+
 # Story 1.2: Tudásbázis-séma
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -18,22 +22,22 @@ so that a dokumentumok és a chunkjaik konzisztensen, kereshetően tárolhatók.
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `db/schema.sql`** (AC: 1, 2, 3, 4)
-  - [ ] `CREATE EXTENSION IF NOT EXISTS vector;`
-  - [ ] `knowledge_documents` tábla `IF NOT EXISTS`-szel: `id serial PK`, `source text NOT NULL UNIQUE`, `title text NOT NULL`, `game text NOT NULL`, `section text NOT NULL CHECK (section IN ('attekintes','elokeszules','jatekmenet','pontozas','gyik'))`, `content_hash text NOT NULL`, `chunk_count int NOT NULL DEFAULT 0`, `status text NOT NULL DEFAULT 'active' CHECK (status IN ('active','deleted'))`, `indexed_at timestamptz NOT NULL DEFAULT now()`.
-  - [ ] `knowledge_chunks` tábla `IF NOT EXISTS`-szel: `id serial PK`, `document_id int NOT NULL REFERENCES knowledge_documents(id) ON DELETE CASCADE`, `chunk_index int NOT NULL`, `heading text`, `content text NOT NULL`, `embedding vector(1536) NOT NULL`, `UNIQUE (document_id, chunk_index)`.
-  - [ ] Indexek `IF NOT EXISTS`-szel: `idx_documents_game`, `idx_documents_status`, `idx_chunks_document`.
-  - [ ] **NINCS** approximate (HNSW/IVFFlat) vektor-index — a kis korpuszon a pontos seq-scan gyors, a golden-set pontos top-K-t igényel (ld. spine Deferred); kommentben jelezd, hova kerülne nagyobb korpusznál.
-- [ ] **T2: `docker-compose.yml` bővítése** (AC: 5) — UPDATE
-  - [ ] A `db` service `volumes` alá: `- ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro` (friss klónnál az initdb automatikusan lefuttatja).
-- [ ] **T3: `db:schema` script** (AC: 5) — UPDATE `package.json`
-  - [ ] `"db:schema": "docker compose exec -T db psql -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"`
-- [ ] **T4: Élő DB-verifikáció** (AC: 1-4)
-  - [ ] `docker compose up -d` (a mount miatt újralétrehozza a konténert; a `pgdata` kötet megmarad), majd `pnpm db:schema`.
-  - [ ] `\d knowledge_documents` és `\d knowledge_chunks`: oszlopok, FK CASCADE, indexek, CHECK-ek helyesek.
-  - [ ] Idempotencia: `pnpm db:schema` másodszor → csak NOTICE, nincs hiba.
-  - [ ] CASCADE: tranzakcióban insert dokumentum + chunk (`array_fill(0.1, ARRAY[1536])::vector`), majd dokumentum-törlés → chunk-szám 1→0; ROLLBACK.
-  - [ ] CHECK: rossz `section` és rossz `status` insert elutasítva.
+- [x] **T1: `db/schema.sql`** (AC: 1, 2, 3, 4)
+  - [x] `CREATE EXTENSION IF NOT EXISTS vector;`
+  - [x] `knowledge_documents` tábla `IF NOT EXISTS`-szel: `id serial PK`, `source text NOT NULL UNIQUE`, `title text NOT NULL`, `game text NOT NULL`, `section text NOT NULL CHECK (section IN ('attekintes','elokeszules','jatekmenet','pontozas','gyik'))`, `content_hash text NOT NULL`, `chunk_count int NOT NULL DEFAULT 0`, `status text NOT NULL DEFAULT 'active' CHECK (status IN ('active','deleted'))`, `indexed_at timestamptz NOT NULL DEFAULT now()`.
+  - [x] `knowledge_chunks` tábla `IF NOT EXISTS`-szel: `id serial PK`, `document_id int NOT NULL REFERENCES knowledge_documents(id) ON DELETE CASCADE`, `chunk_index int NOT NULL`, `heading text`, `content text NOT NULL`, `embedding vector(1536) NOT NULL`, `UNIQUE (document_id, chunk_index)`.
+  - [x] Indexek `IF NOT EXISTS`-szel: `idx_documents_game`, `idx_documents_status`, `idx_chunks_document`.
+  - [x] **NINCS** approximate (HNSW/IVFFlat) vektor-index — a kis korpuszon a pontos seq-scan gyors, a golden-set pontos top-K-t igényel (ld. spine Deferred); kommentben jelezd, hova kerülne nagyobb korpusznál.
+- [x] **T2: `docker-compose.yml` bővítése** (AC: 5) — UPDATE
+  - [x] A `db` service `volumes` alá: `- ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro` (friss klónnál az initdb automatikusan lefuttatja).
+- [x] **T3: `db:schema` script** (AC: 5) — UPDATE `package.json`
+  - [x] `"db:schema": "docker compose exec -T db psql -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"`
+- [x] **T4: Élő DB-verifikáció** (AC: 1-4)
+  - [x] `docker compose up -d` (a mount miatt újralétrehozza a konténert; a `pgdata` kötet megmarad), majd `pnpm db:schema`.
+  - [x] `\d knowledge_documents` és `\d knowledge_chunks`: oszlopok, FK CASCADE, indexek, CHECK-ek helyesek.
+  - [x] Idempotencia: `pnpm db:schema` másodszor → csak NOTICE, nincs hiba.
+  - [x] CASCADE: tranzakcióban insert dokumentum + chunk (`array_fill(0.1, ARRAY[1536])::vector`), majd dokumentum-törlés → chunk-szám 1→0; ROLLBACK.
+  - [x] CHECK: rossz `section` és rossz `status` insert elutasítva.
 
 ## Dev Notes
 
@@ -70,8 +74,27 @@ so that a dokumentumok és a chunkjaik konzisztensen, kereshetően tárolhatók.
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`)
+
 ### Debug Log References
+
+- `pnpm db:schema` alkalmazás + 2. futás → csak NOTICE, nincs ERROR (idempotens).
+- Élő DB-verifikáció: `\d`, CASCADE (chunk 1→0), CHECK (rossz section/status elutasítva).
+- Regresszió: `pnpm test` 13/13 zöld; `docker compose config -q` OK.
 
 ### Completion Notes List
 
+- `db/schema.sql`: `knowledge_documents` + `knowledge_chunks (vector(1536))`, FK ON DELETE CASCADE, `section`/`status` CHECK, `UNIQUE(document_id, chunk_index)`, 3 index. Idempotens (IF NOT EXISTS). **Nincs** approximate vektor-index (spine Deferred — pontos top-K a golden-sethez).
+- AD-10 igazolva: a `knowledge_chunks`-on nincs `section` oszlop (a szekció dokumentum-tulajdon).
+- `docker-compose.yml`: initdb-mount a sémára; `package.json`: `db:schema` script **beégetett** `-U/-d`-vel (a nested-shell forma a Windows/pnpm shellen elhasal).
+- A `pgdata` kötet egy korábbi sessionből örökölt táblákat; az idempotens séma ezt hibátlanul kezelte.
+
 ### File List
+
+- `db/schema.sql` (új)
+- `docker-compose.yml` (módosítva — initdb-mount)
+- `package.json` (módosítva — `db:schema` script)
+
+### Change Log
+
+- 2026-07-18: Story 1.2 implementálva — pgvector-séma (2 tábla, CASCADE, CHECK), idempotens, élő DB-n verifikálva. Status → review.
