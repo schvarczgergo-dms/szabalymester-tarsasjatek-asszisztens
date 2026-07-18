@@ -47,6 +47,8 @@ export interface RetrieveDeps {
 export interface RetrieveOptions {
   wideNet: number;
   keepTop: number;
+  /** Relevancia-küszöb: a küszöbnél távolabbi találatok kiesnek (grounded absztenció). Opcionális. */
+  maxDistance?: number;
 }
 
 function emptyResult(trace: RetrievalTrace): RetrievalResult {
@@ -107,6 +109,13 @@ export async function retrieve(
     hits = [];
   }
   trace.distances = hits.map((hit) => hit.distance);
+
+  // Relevancia-küszöb (opcionális): a túl távoli találatokat kiszűrjük — ha nem marad releváns
+  // chunk, az eredmény `empty` (grounded absztenció, modell-függetlenül; AD-1/AD-2).
+  if (opts.maxDistance !== undefined) {
+    hits = hits.filter((hit) => hit.distance <= opts.maxDistance!);
+  }
+
   if (hits.length === 0) {
     return emptyResult(trace);
   }
