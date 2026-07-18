@@ -52,6 +52,9 @@ export async function askRules(
     system: AGENT_SYSTEM_PROMPT,
     prompt: question,
     tools: { searchRules },
+    // Az ELSŐ lépésben kötelező a tool-hívás → az agent MINDIG keres, mielőtt válaszol
+    // (kis modelleknél a spontán tool-hívás megbízhatatlan). Utána szabad (a válasz jöhet).
+    prepareStep: ({ stepNumber }) => (stepNumber === 0 ? { toolChoice: 'required' } : {}),
     stopWhen: stepCountIs(AGENT_MAX_STEPS),
   });
 
