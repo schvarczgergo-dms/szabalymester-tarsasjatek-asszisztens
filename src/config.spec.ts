@@ -44,6 +44,11 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ ...validEnv, RERANK_PROVIDER: 'gemini' })).toThrowError(ConfigError);
   });
 
+  it('a korpusz nyelve alapból hu, env-ből en-re váltható', () => {
+    expect(loadConfig(validEnv).corpusLanguage).toBe('hu');
+    expect(loadConfig({ ...validEnv, CORPUS_LANGUAGE: 'en' }).corpusLanguage).toBe('en');
+  });
+
   it('a base-URL override-ot beolvassa (lokális Ollama)', () => {
     const config = loadConfig({ ...validEnv, OPENAI_BASE_URL: 'http://localhost:11434/v1' });
     expect(config.openaiBaseUrl).toBe('http://localhost:11434/v1');

@@ -40,6 +40,10 @@ const optionalUrl = () => z.preprocess(blankToUndefined, z.string().url().option
 const providerChoice = (fallback: 'openai' | 'anthropic') =>
   z.preprocess(blankToUndefined, z.enum(['openai', 'anthropic']).default(fallback));
 
+/** A korpusz (és így a HyDE) nyelve; üres/whitespace → default. */
+const languageChoice = (fallback: 'hu' | 'en') =>
+  z.preprocess(blankToUndefined, z.enum(['hu', 'en']).default(fallback));
+
 /** Pozitív egész env-változó alapértelmezéssel; üres/whitespace → default. */
 const positiveInt = (fallback: number) =>
   z.preprocess(
@@ -58,6 +62,7 @@ const KEY_TO_ENV: Record<string, string> = {
   databaseUrl: 'DATABASE_URL',
   openaiBaseUrl: 'OPENAI_BASE_URL',
   anthropicBaseUrl: 'ANTHROPIC_BASE_URL',
+  corpusLanguage: 'CORPUS_LANGUAGE',
   embeddingModel: 'EMBEDDING_MODEL',
   embeddingDimensions: 'EMBEDDING_DIMENSIONS',
   schemaVectorDim: 'SCHEMA_VECTOR_DIM',
@@ -81,6 +86,10 @@ const configSchema = z.object({
   // Ollama (OpenAI-kompatibilis) ill. a LiteLLM proxy (Anthropic-kompatibilis) végpont.
   openaiBaseUrl: optionalUrl(),
   anthropicBaseUrl: optionalUrl(),
+
+  // A korpusz nyelve — a HyDE EZEN a nyelven generál (nyelvi rés elkerülése). Lokálisan `en`
+  // (Wikipédia-korpusz), élesben `hu` (magyar korpusz). [terv.md: HyDE = korpusz nyelve]
+  corpusLanguage: languageChoice('hu'),
 
   // Modell-szereposztás (az architektúra-spine web-ellenőrzött értékei) — mind felülírható env-ből.
   embeddingModel: withDefault('text-embedding-3-small'),
@@ -117,6 +126,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     databaseUrl: env.DATABASE_URL,
     openaiBaseUrl: env.OPENAI_BASE_URL,
     anthropicBaseUrl: env.ANTHROPIC_BASE_URL,
+    corpusLanguage: env.CORPUS_LANGUAGE,
     embeddingModel: env.EMBEDDING_MODEL,
     embeddingDimensions: env.EMBEDDING_DIMENSIONS,
     schemaVectorDim: env.SCHEMA_VECTOR_DIM,
