@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+pnpm-lock.yaml
+
+# Kézzel írt próza — a Prettier ne formázza át az authored dokumentációt.
+*.md
+docs/abra/
+
+# BMAD keretrendszer és kimenetei — nem a mi kódunk, ne formázza.
+_bmad/
+_bmad-output/
+.claude/skills/

@@ -1,0 +1,4 @@
+# Build-scriptet futtatható függőségek explicit engedélyezése (pnpm 11+).
+# Az esbuildet a tsx és a vitest használja; a natív binárisához kell a build-script.
+allowBuilds:
+  esbuild: true
