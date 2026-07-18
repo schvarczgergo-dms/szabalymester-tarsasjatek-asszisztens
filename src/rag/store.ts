@@ -183,6 +183,13 @@ export function createStore(db: Db, options: StoreOptions): Store {
     },
 
     async search(embedding, topK) {
+      // A kérdés-vektor is az egyetlen embedding-térben él (AD-3) — rossz dimenzió fail-fast,
+      // nem egy értelmetlen DB-hiba a `::vector` castnál.
+      if (embedding.length !== dimensions) {
+        throw new StoreError(
+          `A keresési vektor dimenziója ${embedding.length}, de a konfiguráció ${dimensions}-t vár (AD-3).`,
+        );
+      }
       const result = await db.query(SEARCH_SQL, [toVector(embedding), topK]);
       return result.rows.map((row) => ({
         content: String(row.content ?? ''),

@@ -165,6 +165,14 @@ describe('createStore.search', () => {
     expect(f.poolCalls[0]!.params).toEqual(['[0.1,0.2,0.3]', 5]);
     expect(hits[0]).toMatchObject({ game: 'Catan', section: 'jatekmenet', distance: 0.12 });
   });
+
+  it('a rossz dimenziójú keresési vektor fail-fast (AD-3), a DB-t meg sem hívja', async () => {
+    const f = makeFakeDb();
+    const store = createStore(f.db, { dimensions: 1536 });
+
+    await expect(store.search([0.1, 0.2, 0.3], 5)).rejects.toThrow(StoreError);
+    expect(f.poolCalls).toHaveLength(0);
+  });
 });
 
 describe('createStore.list / delete', () => {
