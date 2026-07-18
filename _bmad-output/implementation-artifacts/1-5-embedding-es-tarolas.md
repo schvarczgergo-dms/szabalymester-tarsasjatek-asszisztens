@@ -4,7 +4,7 @@ baseline_commit: 61d17ab
 
 # Story 1.5: Embedding és tárolás
 
-Status: review
+Status: done
 
 ## Story
 
@@ -47,6 +47,13 @@ so that a chunkok kereshetően, a modellel egyező dimenzióban kerülnek pgvect
 - [x] **T6: Zöld-kapu** (AC: 5) — `pnpm test` (42 → 58) + `pnpm typecheck · lint · format:check` zöld.
 - [x] **T7 (opcionális): Élő DB-verifikáció szintetikus vektorral** (AC: 3, 4) — kulcs nélkül
   - [x] a futó DB-n (Story 1.2) szintetikus 1536-dim vektorral: `insert` (dok + 2 chunk egy tranzakcióban) → `search` 2 találat helyes payloaddal → `list` `chunk_count=2` → `delete` → CASCADE chunk-szám 2→0. NEM hívott OpenAI-t.
+
+### Review Findings
+
+- [x] [Review][Patch] `embedTexts` végtelen ciklus `batchSize ≤ 0` esetén (`chunkInto` `i += 0`) — pozitív-egész guard + `EmbedError`, teszttel. Forrás: edge (High). [embed.ts:embedTexts]
+- [x] [Review][Patch] `store.search` nem védte a kérdés-vektor dimenzióját — az AD-3 a kérdésre is áll; fail-fast `StoreError` az értelmetlen `::vector` DB-hiba helyett, teszttel. Forrás: blind+edge (Low). [store.ts:search]
+- [x] [Review][Defer] `EMBEDDING_DIMENSIONS ≠ 1536` egyéni dimenzió tényleges átadása az OpenAI hívásnak (`providerOptions.dimensions`) — a séma jelenleg fix `vector(1536)`, a `checkEmbeddingDimensions` tiltja az eltérést; a paraméterezhető dimenzió sémamigrációval együtt jön (spine Deferred).
+- [x] [Review][Defer] Approximate vektor-index (HNSW) a `search`-höz — a kis korpuszon a pontos seq-scan gyors (spine Deferred, Story 1.2 döntés).
 
 ## Dev Notes
 
@@ -129,3 +136,4 @@ Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból (Claude Code limit után foly
 ### Change Log
 
 - 2026-07-18: Story 1.5 implementálva — `rag/embed` (batch + dimenzió-guard + usage) és `rag/store` (tranzakciós insert/search/list/delete, pgvector), TDD 16 új teszt (42→58), élő DB-verifikáció szintetikus vektorral. Status → review.
+- 2026-07-18: Code review — 2 patch (embed batch-guard végtelen ciklus ellen, search dimenzió-guard), +2 teszt (58→60), zöld-kapu. 2 defer (egyéni dimenzió, HNSW-index). Status → done.

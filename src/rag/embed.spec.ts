@@ -52,6 +52,12 @@ describe('embedTexts', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it('érvénytelen batch-méret (0) beszédes hibát dob, nem fut végtelen ciklusba', async () => {
+    await expect(
+      embedTexts(['x'], { embedBatch: fakeBatch(4), dimensions: 4, batchSize: 0 }),
+    ).rejects.toThrow(EmbedError);
+  });
+
   it('dimenzió-guard: a várttól eltérő hosszú vektor beszédes hibát dob', async () => {
     const badBatch: EmbedBatchFn = (values) =>
       Promise.resolve({ embeddings: values.map(() => [0, 0, 0]), usage: { tokens: 0 } });

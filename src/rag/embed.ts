@@ -75,6 +75,9 @@ function chunkInto<T>(items: T[], size: number): T[][] {
 export async function embedTexts(texts: string[], deps: EmbedDeps): Promise<EmbeddedResult> {
   const { embedBatch, dimensions } = deps;
   const batchSize = deps.batchSize ?? DEFAULT_BATCH_SIZE;
+  if (!Number.isInteger(batchSize) || batchSize < 1) {
+    throw new EmbedError(`A batch-méret pozitív egész kell legyen, kapott: ${batchSize}.`);
+  }
 
   const vectors: number[][] = [];
   let tokens = 0;
