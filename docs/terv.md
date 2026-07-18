@@ -35,16 +35,22 @@ nagy címhez ad hivatalos magyar szabálykönyv-PDF-et; a válaszok is magyarul 
 
 ## 2. A tudásbázis (korpusz)
 
-- **7-8 népszerű játék**, mind hivatalos magyar szabállyal:
-  Catan (A telepesek), Carcassonne, Ticket to Ride, Pandémia, 7 Csoda, Azul, Splendor,
-  King of Tokyo.
-- Játékonként **3-4 tagolt markdown** (áttekintés+komponensek / előkészület / játékmenet /
-  pontozás+játék vége / gyakori kérdések) → **~24-28 dokumentum**, több altémával
-  (minden játék egy altéma), összesen **> 15 000 szó**.
-- **Forrás** (legális, publikus): a hivatalos magyar szabálykönyv-PDF-ek
-  (Gémklub / kiadói oldal / BoardGameGeek *Files* szekció). A `source` mezőbe a
-  letöltési URL kerül (provenance → grounding).
-- Formátum: a PDF-ekből markdownba konvertált szöveg, front matterrel (ld. lent).
+> **Végleges állapot (2026-07-18):** az eredeti terv hivatalos magyar szabálykönyv-PDF-eket
+> feltételezett, de ezek **jogvédettek** (a nyilvános repóba tenni kockázatos). Ezért a korpusz
+> **jogtiszta, CC BY-SA 4.0** forrásból készült (angol Wikipédia + némi Wikibooks). Az alábbi
+> eredeti terv-leírást ez váltja fel; a részletek: `seed/README.md`.
+
+- **~22 népszerű társasjáték** (a 8 golden-set mag: Catan, Carcassonne, Ticket to Ride, Pandemic,
+  7 Wonders, Azul, Splendor, King of Tokyo + további címek a korpusz-mélységhez). **Gloomhaven
+  szándékosan kimarad** (a negatív teszt „nincs a korpuszban" próbája).
+- A szabály-releváns szakaszokra szűrve (áttekintés + játékmenet; az előkészület/pontozás gyakran
+  a Wikipédia „Gameplay" szakasza alá ágyazva) → **54 dokumentum, ~17 600 szó**.
+- **Forrás:** angol Wikipédia/Wikibooks, **CC BY-SA 4.0**; minden fájl elején attribúció, a `source`
+  mezőben a cikk-URL + szakasz-horgony (provenance → grounding). A hivatalos, jogvédett kiadói
+  szabálykönyveket NEM használjuk.
+- **Nyelv:** a korpusz **angol**, a válasz **magyar** (kereszt-nyelvű RAG; a HyDE a korpusz nyelvén
+  generál — `CORPUS_LANGUAGE`, hogy a keresztnyelvi rés ne rontsa a keresést).
+- Formátum: markdown, front matterrel (ld. lent).
 
 Front matter minden korpusz-dokumentumon:
 

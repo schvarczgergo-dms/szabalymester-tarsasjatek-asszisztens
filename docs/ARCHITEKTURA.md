@@ -4,6 +4,13 @@
 > változásérzékelés, új dokumentum, törölt dokumentum chunkjai, újraindexelés triggere —
 > plusz az architektúra-ábra (export a repóban).
 
+> **Végleges állapot (2026-07-18):** az inkrementális frissítés **meg is valósult**
+> (`src/ingest/ingest.ts` — hash-alapú `planSync`, soft-delete audit + revival, `--rebuild`,
+> `store.listForSync`/`markDeleted`). Az alábbi terv ezzel összhangban van. Egy eltérés: az
+> embedding **dimenziója konfigurálható** (`EMBEDDING_DIMENSIONS` + `SCHEMA_VECTOR_DIM`) — az
+> ábrán szereplő `text-embedding-3-small (1536 dim)` a felhő-default; lokálisan pl.
+> `nomic-embed-text (768 dim)`. A modell/dimenzió váltása `--rebuild`-et követel.
+
 ## 0. Kiindulás — mi a probléma?
 
 A forrás (a hivatalos szabálykönyvek / a `seed/rules/` mappa) nem statikus: a kiadó új
