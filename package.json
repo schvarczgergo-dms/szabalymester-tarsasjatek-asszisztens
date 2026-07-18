@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "db:schema": "docker compose exec -T db psql -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
