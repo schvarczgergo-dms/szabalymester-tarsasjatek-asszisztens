@@ -27,3 +27,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# BMAD — személyes (installer-managed) beállítások; a keret + a custom team-config megy a repóba
+_bmad/config.user.toml
