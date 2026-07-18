@@ -5,6 +5,11 @@
 > Nagyságrend elég, de a SAJÁT számokból. Ez a dokumentum a módszertan; a végleges
 > számok a tényleges futásokból kerülnek a README-be.
 
+> **Végleges állapot (2026-07-18):** a mért számok a **README „Költségbecslés (mért)"**
+> szakaszában. A fejlesztés **helyi Ollamán** futott → a valós pénzköltség **$0** (ingyenes);
+> a mért token viszont valós (ingest ~28,5K; egy kérdés ~7–8K, ~85% válasz-modell), amiből a
+> felhő-projekció a `src/eval/cost.ts` `estimateCostUsd`-jével számolható.
+
 ## 1. Hogyan mérünk?
 
 - Az AI SDK minden hívásnál visszaadja a token-használatot (`usage`) — az ingest és a

@@ -7,6 +7,23 @@ találat, kimondja — nem talál ki szabályt.
 Ez a fájl a belépő. A részletek a `docs/`-ban élnek — **azok az igazság forrása**, ne
 duplikáld őket ide, hanem dolgozz belőlük.
 
+## Megvalósítási állapot (2026-07-18 — végleges)
+
+A pipeline **kész és fut** (Epic 1–3 mind `done`; ld. `_bmad-output/implementation-artifacts/sprint-status.yaml`).
+Néhány terv-eltérés, amit a végleges állapot tükröz:
+
+- **Korpusz:** a hivatalos, jogvédett magyar szabálykönyvek helyett **jogtiszta, CC BY-SA 4.0**
+  forrás (angol Wikipédia + némi Wikibooks), attribúcióval — ~22 játék, **54 dokumentum, ~17 600 szó**
+  (`seed/rules/`, `seed/README.md`). A korpusz **angol**, a válasz **magyar** (kereszt-nyelvű RAG;
+  a HyDE a korpusz nyelvén generál — `CORPUS_LANGUAGE`).
+- **Lokális, ingyenes mód:** a modellek futtathatók helyi **Ollamán** (provider base-URL override
+  + per-szerep `*_PROVIDER` választó, LiteLLM nélkül) vagy felhőben — `docs/local-mode.md`.
+- **Grounded absztenció:** relevancia-küszöb (`RELEVANCE_MAX_DISTANCE`) → gyenge találatnál a
+  keresés üres, az agent kimondja, hogy nincs információ (a negatív teszt modell-függetlenül átmegy).
+- **Golden set mérve:** `pnpm eval:golden-set` — eredmény és őszinte elemzés: `docs/golden-set.md` §5,
+  `docs/golden-set-eredmenyek.md`. A lokális kis modell (qwen2.5:3b) korlátozza a válasz-pontosságot;
+  éles minőséghez erős felhő-modell.
+
 ## Olvasási sorrend (mielőtt kódolsz)
 
 1. `docs/terv.md` — a teljes terv (use case, korpusz, célarchitektúra, projektstruktúra, pipeline)

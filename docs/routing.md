@@ -83,3 +83,19 @@ olcsóbb fallbackje, és a trace-ből látszik, melyik ág futott.
   nélkül lehetséges.
 - Az egységes interfész a Vercel AI SDK (`ai` + `@ai-sdk/openai` + `@ai-sdk/anthropic`):
   provider-csere = egy import + egy modellnév.
+
+## 6. Lokális (ingyenes) mód — végleges kiegészítés
+
+A fenti felhő-szereposztás az **éles** default. A megvalósításban a routing **kétirányú**:
+
+- **Base-URL override** (`OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`): a provider-adapterek a helyi
+  **Ollamára** (OpenAI-kompatibilis `/v1`) irányíthatók, a kód érintése nélkül (`src/providers.ts`).
+- **Per-szerep provider-választó** (`RERANK_PROVIDER`, `ANSWER_PROVIDER` = `openai|anthropic`):
+  mivel az Ollama natívan az OpenAI-formátumot beszéli, a rerank/válasz is mehet az OpenAI-adapteren
+  át az Ollamára — így **LiteLLM nélkül** fut minden lokálisan. Éles: `anthropic` (fenti szereposztás);
+  lokális: `openai` → Ollama.
+- **Kereszt-nyelv:** a korpusz angol → a HyDE a korpusz nyelvén generál (`CORPUS_LANGUAGE=en`), hogy a
+  HyDE-vektor az angol chunkok közé essen (a nyers, magyar-kérdés baseline ehhez képest gyenge — a
+  golden-set méri).
+
+Részletes futtatás: `docs/local-mode.md`.
