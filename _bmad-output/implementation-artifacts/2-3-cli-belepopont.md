@@ -1,10 +1,10 @@
 ---
-baseline_commit: c06eeef
+baseline_commit: 0bb91de
 ---
 
 # Story 2.3: CLI-belépőpont a kérdés-válaszhoz
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -22,15 +22,10 @@ so that természetes nyelven kérdezhetek és azonnal grounded választ kapok.
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `src/cli.ts` (+ `cli.spec.ts`) — TDD** (AC: 1–5)
-  - [ ] `parseCliArgs(argv) → { command: 'ask'; question } | { command: 'help' } | { command: 'error'; message }` — tiszta; az `ask` utáni argumentumok a kérdéssé fűzve.
-  - [ ] `formatAnswer(result) → string` — a válasz + „Források:" lista a `reports` egyedi forrásaiból (játék · szakasz · URL); üres/absztenció esetén is értelmes kimenet.
-  - [ ] `main()` — `parseCliArgs(process.argv)`; `ask` → `loadConfig()` → `createAgent(config)` → `agent.ask(question)` → `formatAnswer` kiírás → `close()`; `help`/`error` → használati üzenet; try/catch a beszédes hibához.
-  - [ ] Belépő-guard `pathToFileURL`-lel (cross-platform), mint az `ingest.ts`-ben.
-  - [ ] Tesztek: `parseCliArgs` (ask/help/error/több szavas kérdés); `formatAnswer` (források listázása, egyediség, absztenció-eset).
-- [ ] **T2: `package.json` — `cli` script** (AC: 1) — `"cli": "tsx src/cli.ts"`.
-- [ ] **T3: Zöld-kapu** (AC: 5) — `pnpm test` + `typecheck · lint · format:check` zöld.
-- [ ] **T4 (opcionális): Éles smoke** — `pnpm cli ask "..."` az Ollamán (pozitív + negatív), a válasz + források láthatók.
+- [x] **T1: `src/cli.ts` (+ `cli.spec.ts`) — TDD** — `parseCliArgs` (ask/help/error, több szavas kérdés összefűzve), `formatAnswer` (válasz + egyedizett „Források:" lista a `reports`-ból), `main()` (loadConfig fail-fast → createAgent → ask → formatAnswer → finally close), belépő-guard `pathToFileURL`. 8 unit teszt.
+- [x] **T2: `package.json` — `cli` script** — `"cli": "tsx src/cli.ts"`.
+- [x] **T3: Zöld-kapu** — `pnpm test` 166 pass +1 skip; `typecheck · lint · format:check` zöld.
+- [x] **T4: Éles smoke (Ollama)** — `pnpm cli ask "..."` végigfutott: magyar válasz + Források-lista (játék · szakasz · URL). A válasz *tartalmi pontossága* a 3B modellen gyenge (dokumentált korlát), a CLI/grounding-mechanizmus helyes.
 
 ## Dev Notes
 
@@ -65,10 +60,26 @@ so that természetes nyelven kérdezhetek és azonnal grounded választ kapok.
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- Unit: `cli.spec.ts` 8 teszt (parseCliArgs + formatAnswer); teljes csomag 166 pass + 1 skip.
+- Kapu: typecheck · lint · format:check zöld.
+- Éles smoke (Ollama): `pnpm cli ask "..."` → magyar válasz + Források-lista; ~49s (HyDE+embed+rerank+válasz a 3B-n).
 
 ### Completion Notes List
 
+- `src/cli.ts`: `parseCliArgs` (ask/help/error, több szavas kérdés összefűzve), `formatAnswer` (válasz + egyedizett „Források:" a `reports[].report.sources`-ból — a grounding a CLI-n is látszik), `main()` fail-fast `loadConfig` → `createAgent` → `ask` → `formatAnswer`, `finally close()` (pg-pool), belépő-guard `pathToFileURL`-lel. `package.json`: `cli` script.
+- A tiszta függvények unit-tesztelve; a `main()` (élő modellhívás) élő smoke-olva.
+- **Ismert korlát (dokumentált):** a válasz tartalmi pontossága a lokális `qwen2.5:3b`-n gyenge; a CLI, a grounding-forráslista és a magyar kimenet helyes. Éles minőség: erős válasz-modell.
+
 ### File List
 
+- `src/cli.ts` (új)
+- `src/cli.spec.ts` (új)
+- `package.json` (módosítva — `cli` script)
+
 ### Change Log
+
+- 2026-07-18: Story 2.3 implementálva — `pnpm cli ask "<kérdés>"` belépőpont (parseCliArgs + formatAnswer + main), TDD 8 teszt, élő smoke Ollamán. Status → done.
