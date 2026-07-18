@@ -1,0 +1,13 @@
+# Team / enterprise overrides for _bmad/config.toml.
+# Committed to the repo — applies to every developer on the project.
+# Tables deep-merge over base config; keyed entries merge by key.
+#
+# A projekt magyar (korpusz + válaszok + docs), ezért a BMAD is magyarul
+# kommunikáljon és magyarul generálja a story-kat / terveket.
+# FONTOS: a create-story közvetlenül a _bmad/bmm/config.yaml-ból olvas — azt is
+# magyarra állítottuk; egy esetleges `bmad-method install` visszaírja angolra,
+# olyankor a config.yaml nyelvét kézzel újra magyarra kell állítani (vagy az
+# installert `--set core.communication_language=Hungarian` kapcsolóval futtatni).
+[core]
+communication_language = "Hungarian"
+document_output_language = "Hungarian"

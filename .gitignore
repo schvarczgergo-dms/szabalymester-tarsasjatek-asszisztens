@@ -27,3 +27,10 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# BMAD — személyes (installer-managed) beállítások; a keret + a custom team-config megy a repóba
+_bmad/config.user.toml
+# BMAD skills: a telepítő generálja (.claude/skills) — ne a leadott repóba
+.claude/skills/
+# Claude Code — gépspecifikus beállítás
+.claude/settings.local.json
