@@ -105,6 +105,44 @@ describe('runIngest', () => {
     expect(report.tokens).toBeGreaterThan(0);
   });
 
+  it('üres korpusz: NEM töröl (biztonsági védelem a tudásbázis kiürítése ellen)', async () => {
+    const store = fakeStore([
+      { source: 'a', contentHash: 'h', status: 'active' },
+      { source: 'b', contentHash: 'h', status: 'active' },
+    ]);
+    const embed = vi.fn(() => Promise.resolve({ vectors: [], usage: { tokens: 0 } }));
+
+    const report = await runIngest({
+      readCorpus: () => Promise.resolve<CorpusEntry[]>([]),
+      embed,
+      store,
+    });
+
+    expect(store.markDeleted).not.toHaveBeenCalled();
+    expect(report.deleted).toBe(0);
+  });
+
+  it('duplikált source a korpuszban → a második hibás, nem írja felül némán (AD-10)', async () => {
+    const store = fakeStore([]);
+    const embed = vi.fn((texts: string[]) =>
+      Promise.resolve({ vectors: texts.map(() => [0.1]), usage: { tokens: 1 } }),
+    );
+
+    const report = await runIngest({
+      readCorpus: () =>
+        Promise.resolve<CorpusEntry[]>([
+          { source: 'dup', raw: md('dup', 'Első.') },
+          { source: 'dup', raw: md('dup', 'Második, ütköző.') },
+        ]),
+      embed,
+      store,
+    });
+
+    expect(report.failed).toHaveLength(1);
+    expect(report.failed[0]!.error).toMatch(/duplik/i);
+    expect(store.insert).toHaveBeenCalledTimes(1);
+  });
+
   it('egy dokumentum parse-hibája nem állítja le a többit (hiba-izoláció)', async () => {
     const good = md('good', 'Jó szabály.');
     const bad = 'nincs front matter, csak szöveg';
