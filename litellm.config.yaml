@@ -1,0 +1,36 @@
+# LiteLLM proxy - Anthropic-compatible (/v1/messages) gateway to a LOCAL Ollama.
+# Replaces the paid Claude Console for the rerank + answer models (no subscription).
+#
+# NOTE: keep this file ASCII-only. On Windows LiteLLM reads the YAML with the locale
+# codec (cp1250), so accented UTF-8 comments crash the parser (UnicodeDecodeError).
+#
+# Why: our code speaks the Anthropic format (@ai-sdk/anthropic), but Ollama only speaks
+# the OpenAI-compatible API. LiteLLM sits in between: it exposes an Anthropic /v1/messages
+# endpoint (port 4000) and translates to Ollama under the hood. The OpenAI side of our app
+# (embedding + HyDE) talks to Ollama /v1 DIRECTLY, so it does not need this proxy.
+#
+# Start (needs Python; uvx is cleanest, no global pollution):
+#   set OLLAMA_API_BASE first (PowerShell): $env:OLLAMA_API_BASE="http://localhost:11434"
+#   uvx --from "litellm[proxy]" litellm --config litellm.config.yaml --port 4000
+#   (or: pip install "litellm[proxy]" && litellm --config litellm.config.yaml --port 4000)
+#
+# IMPORTANT: use a RECENT litellm - older versions failed on ollama_chat + Anthropic
+# endpoint + tool/structured calling (BerriAI/litellm #13429, fixed in #13833). On errors:
+#   uvx --from "litellm[proxy]@latest" litellm --config litellm.config.yaml --port 4000
+#
+# In .env (local mode): ANTHROPIC_BASE_URL=http://localhost:4000/v1 ,
+#   RERANK_MODEL=szabalymester-local , ANSWER_MODEL=szabalymester-local ,
+#   ANTHROPIC_API_KEY=sk-local-anything (dummy: the SDK needs a non-empty value).
+
+model_list:
+  - model_name: szabalymester-local
+    litellm_params:
+      # ollama_chat/ (NOT ollama/): uses the chat endpoint, which translates messages,
+      # tool calls and structured (JSON) output cleanly. qwen2.5:3b is small, supports
+      # function calling, and fits a modest GPU.
+      model: ollama_chat/qwen2.5:3b
+      api_base: http://localhost:11434
+    model_info:
+      # Tell LiteLLM the model can call tools; otherwise it falls back to weaker JSON-mode
+      # emulation (the rerank uses structured output, the answer step uses a tool loop).
+      supports_function_calling: true

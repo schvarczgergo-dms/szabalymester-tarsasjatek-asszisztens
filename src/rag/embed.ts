@@ -1,6 +1,6 @@
 import { embedMany } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import type { Config } from '../config';
+import { createProviders } from '../providers';
 
 /**
  * A séma `vector(N)` rögzített dimenziója (`db/schema.sql`). Az embedding-modell
@@ -104,7 +104,7 @@ export async function embedTexts(texts: string[], deps: EmbedDeps): Promise<Embe
  * dokumentumokat UGYANEZ vektorizálja (AD-3) — a modellnév kizárólag a `config`-ból jön (AD-6).
  */
 export function createOpenAIEmbedBatch(config: Config): EmbedBatchFn {
-  const model = openai.embedding(config.embeddingModel);
+  const model = createProviders(config).openai.embedding(config.embeddingModel);
   return async (values) => {
     const { embeddings, usage } = await embedMany({ model, values });
     return { embeddings, usage: { tokens: usage.tokens } };
