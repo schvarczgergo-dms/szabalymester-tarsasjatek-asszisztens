@@ -35,9 +35,9 @@ so that az ingest valós, kereshető tudásbázist épít, és a golden set kié
   - [x] `src/ingest/corpus.spec.ts`: beolvassa a `seed/rules/*.md`-t, mindegyikre `parseDocument` hibamentes, a `source`-ok egyediek, a `section` kanonikus. Üres korpusznál `it.runIf` beszédes jelzés (nincs hamis zöld).
   - [x] A teszt a zöld-kapu része (6 assert + 1 skip a jelenlegi minta-korpuszon).
 - [~] **T3: Korpusz-tartalom összeállítása** (AC: 3, 4) — RÉSZLEGES (minta kész; hiteles tartalom = tartalomgazda)
-  - [x] **Minta-korpusz** (jelölten NEM hiteles, `sample.invalid` source): Catan (elokeszules/jatekmenet/pontozas) + Azul (jatekmenet/pontozas) — 5 dokumentum, a pipeline végponti kipróbálásához.
-  - [ ] A 8 játék HIVATALOS magyar szabálykönyveinek beszerzése + PDF→markdown (tartalomgazda; nem automatizálható hallucináció nélkül).
-  - [ ] Teljes szakasz-lefedés + a golden-set kérdésekhez igazítás.
+  - [x] **Minta-korpusz** (jelölten NEM hiteles, `sample.invalid` source): Catan (elokeszules/jatekmenet/pontozas) + Azul (jatekmenet/pontozas) — 5 dokumentum parafrazált mintatartalommal.
+  - [x] **Vázfájlok a maradék 6 játékhoz** (Carcassonne, Ticket to Ride, Pandémia, 7 Csoda, Splendor, King of Tokyo), egyenként 4 szakasz (attekintes/elokeszules/jatekmenet/pontozas) = 24 fájl; helyes front matter + szakasz-alcímek + „kitöltendő" placeholder törzs. Összesen **29 dokumentum** (mind a 8 spec-játék felvéve).
+  - [ ] A HIVATALOS magyar szabálykönyvek tartalmának beemelése a vázakba/mintákba (tartalomgazda; nem automatizálható hallucináció/másolás nélkül).
 - [~] **T4: Élő ingest + verifikáció** (AC: 5) — RÉSZLEGES (szintetikus e2e kész; valós kulcs függőben)
   - [x] **Szintetikus élő futás** (OpenAI nélkül): `runIngest` a valós fs-olvasóval + determinisztikus ál-embedderrel + valós pg store-ral → 5 dokumentum / 17 chunk betöltve; keresés helyes forrás-payloaddal; MÁSODIK futás 0 embed, 5 kihagyott (hash-inkrementalitás élesben igazolva).
   - [ ] Valós `OPENAI_API_KEY`-es `pnpm ingest` (a tényleges embedding-vektorokkal) — kulcs meglétekor.
@@ -107,10 +107,11 @@ Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
 ### File List
 
 - `seed/README.md` (új — konvenció + figyelmeztetés)
-- `seed/rules/catan-elokeszules.md`, `catan-jatekmenet.md`, `catan-pontozas.md` (új — MINTA)
-- `seed/rules/azul-jatekmenet.md`, `azul-pontozas.md` (új — MINTA)
-- `src/ingest/corpus.spec.ts` (új — korpusz-validátor)
+- `seed/rules/catan-*.md` (3, MINTA-tartalom), `seed/rules/azul-*.md` (2, MINTA-tartalom)
+- `seed/rules/{carcassonne,ticket-to-ride,pandemia,7-csoda,splendor,king-of-tokyo}-{attekintes,elokeszules,jatekmenet,pontozas}.md` (24, VÁZ + „kitöltendő" placeholder)
+- `src/ingest/corpus.spec.ts` (új — korpusz-validátor, 29 dokumentumon zöld)
 
 ### Change Log
 
 - 2026-07-18: Story 1.7 részleges (correct-course után) — `seed/` váz + konvenció-README, korpusz-validátor teszt, jelölt minta-korpusz (Catan+Azul, 5 dok), szintetikus élő ingest-igazolás (5 dok/17 chunk, hash-inkrementalitás). Kapu zöld (78+1 skip). Hiteles tartalom + valós kulcs függőben → Status marad in-progress.
+- 2026-07-18: A maradék 6 spec-játék (Carcassonne, Ticket to Ride, Pandémia, 7 Csoda, Splendor, King of Tokyo) vázfájljai felvéve (4 szakasz/játék = 24 fájl, „kitöltendő" placeholder) — mind a 8 spec-játék jelen, 29 dokumentum; validátor zöld. Hiteles tartalom továbbra is tartalomgazda-feladat.
