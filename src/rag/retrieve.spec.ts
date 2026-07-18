@@ -57,6 +57,7 @@ describe('retrieve', () => {
     expect(result.trace.distances).toHaveLength(3);
     expect(result.trace.rerankScores).toEqual([9, 5, 1]);
     expect(result.trace.contextChars).toBeGreaterThan(0);
+    expect(result.trace.usage.tokens).toBe(9); // HyDE 5 + embed 1 + rerank 3 (AD-11)
   });
 
   it('keepTop levágás a végső kontextusra', async () => {
