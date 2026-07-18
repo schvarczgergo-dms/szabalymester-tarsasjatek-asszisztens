@@ -41,7 +41,7 @@ export async function askRules(
   const reports: ToolOutcome[] = [];
   const searchRules = createSearchRulesTool(
     deps,
-    { wideNet: config.wideNet, keepTop: config.keepTop },
+    { wideNet: config.wideNet, keepTop: config.keepTop, maxDistance: config.relevanceMaxDistance },
     (outcome) => reports.push(outcome),
   );
 

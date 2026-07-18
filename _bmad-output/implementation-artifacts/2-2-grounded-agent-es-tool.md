@@ -4,7 +4,7 @@ baseline_commit: aa6265a
 
 # Story 2.2: Grounded agent és `searchRules` tool
 
-Status: review
+Status: done
 
 ## Story
 
@@ -44,6 +44,11 @@ so that megbízhatóan eldönthetem a szabályhelyzetet, és tudom, ha valamirő
 - [x] **T4** `agent.ts` (+spec) — `askRules`/`createAgent` (`generateText` + `tools` + `stepCountIs`), `aggregateUsage` (AD-11).
 - [x] **T5: Zöld-kapu** — `pnpm test` (156, +11 új) + `typecheck · lint · format:check` zöld.
 - [x] **Éles teszt (Ollama):** a loop meghívta a toolt, forrásokat kapott, magyar választ adott — DE a `qwen2.5:3b` nem tartotta be a groundingot (kitalált szabály + hamis URL; a negatív teszt hallucinált). Lásd Completion Notes: a grounding minősége **modell-erő függő** (a kód helyes, unit-tesztelt).
+
+### Review Findings
+
+- [x] [Review][Patch] **Relevancia-küszöb az absztencióhoz** (bevett RAG-technika): opcionális `RELEVANCE_MAX_DISTANCE` config → a `retrieve` a tág háló túl távoli találatait kiszűri; ha nincs releváns chunk, az eredmény `empty`. Így a **negatív teszt modell-függetlenül** működik (a Gloomhaven-kérdésre az agent már absztenált, nem hallucinált). +2 retrieve-teszt +1 config-teszt. Forrás: éles teszt (High, AD-1/AD-2). [config.ts, retrieve.ts, agent.ts]
+- [x] [Review][Defer] **Pozitív válaszok pontossága:** a `qwen2.5:3b` gyenge (pl. az Azul-választ elrontotta) — éles minőséghez erős válasz-modell (Claude Sonnet) kell; a mechanizmus és a grounding-absztenció helyes. A golden-set (Story 3.2) méri majd, és a küszöb értékét is hangolja.
 
 ## Dev Notes
 
@@ -112,3 +117,4 @@ Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
 ### Change Log
 
 - 2026-07-18: Story 2.2 implementálva — grounded agent + `searchRules` tool (ToolOutcome/AD-8, `<grounding>` prompt, tool-use loop, usage-aggregálás), TDD 11 új teszt. Éles teszt: a lánc működik, de a grounding minőség 3B modellen gyenge (dokumentálva). Status → review.
+- 2026-07-18: Code review — relevancia-küszöb az absztencióhoz (`RELEVANCE_MAX_DISTANCE`), +3 teszt (158 pass +1 skip); éles újratesztnél a negatív teszt már absztenál. 1 defer (pozitív válasz-pontosság = modell-erő, golden-set hangolja). Status → done.

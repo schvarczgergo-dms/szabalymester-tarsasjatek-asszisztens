@@ -44,6 +44,13 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ ...validEnv, RERANK_PROVIDER: 'gemini' })).toThrowError(ConfigError);
   });
 
+  it('a relevancia-küszöb alapból nincs (undefined), env-ből tört értékre állítható', () => {
+    expect(loadConfig(validEnv).relevanceMaxDistance).toBeUndefined();
+    expect(loadConfig({ ...validEnv, RELEVANCE_MAX_DISTANCE: '0.45' }).relevanceMaxDistance).toBe(
+      0.45,
+    );
+  });
+
   it('a korpusz nyelve alapból hu, env-ből en-re váltható', () => {
     expect(loadConfig(validEnv).corpusLanguage).toBe('hu');
     expect(loadConfig({ ...validEnv, CORPUS_LANGUAGE: 'en' }).corpusLanguage).toBe('en');

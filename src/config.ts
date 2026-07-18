@@ -36,6 +36,10 @@ const withDefault = (fallback: string) =>
 /** Opcionális URL (base-URL override lokális/proxy módhoz); üres/whitespace → undefined. */
 const optionalUrl = () => z.preprocess(blankToUndefined, z.string().url().optional());
 
+/** Opcionális pozitív tört (pl. relevancia-küszöb); üres/whitespace → undefined (kikapcsolva). */
+const optionalPositiveFloat = () =>
+  z.preprocess(blankToUndefined, z.coerce.number().positive().optional());
+
 /** Provider-választó egy modell-szerephez (alapértelmezéssel); üres/whitespace → default. */
 const providerChoice = (fallback: 'openai' | 'anthropic') =>
   z.preprocess(blankToUndefined, z.enum(['openai', 'anthropic']).default(fallback));
@@ -73,6 +77,7 @@ const KEY_TO_ENV: Record<string, string> = {
   answerProvider: 'ANSWER_PROVIDER',
   wideNet: 'WIDE_NET',
   keepTop: 'KEEP_TOP',
+  relevanceMaxDistance: 'RELEVANCE_MAX_DISTANCE',
 };
 
 const configSchema = z.object({
@@ -108,6 +113,10 @@ const configSchema = z.object({
   // Keresési pipeline paraméterei.
   wideNet: positiveInt(20),
   keepTop: positiveInt(5),
+  // Relevancia-küszöb (koszinusz-távolság): a küszöbnél távolabbi találatokat a retrieval
+  // irrelevánsnak tekinti → üres eredmény (grounded absztenció, modell-függetlenül). Üresen
+  // KIKAPCSOLVA (a golden-set hangolja; embedding-modellenként eltérő). AD-1/AD-2 támogatás.
+  relevanceMaxDistance: optionalPositiveFloat(),
 });
 
 /** A validált, típusos konfiguráció. */
@@ -137,6 +146,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     answerModel: env.ANSWER_MODEL,
     wideNet: env.WIDE_NET,
     keepTop: env.KEEP_TOP,
+    relevanceMaxDistance: env.RELEVANCE_MAX_DISTANCE,
   });
 
   if (!parsed.success) {

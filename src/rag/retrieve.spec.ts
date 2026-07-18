@@ -106,4 +106,23 @@ describe('retrieve', () => {
     );
     expect(result.empty).toBe(true);
   });
+
+  it('relevancia-küszöb: a küszöb alatti találatokat megtartja', async () => {
+    // A default hits távolságai: 0.0, 0.1, 0.2 → maxDistance 0.15 kettőt tart meg.
+    const result = await retrieve(q, deps(), { wideNet: 20, keepTop: 5, maxDistance: 0.15 });
+    expect(result.empty).toBe(false);
+    expect(result.sources).toHaveLength(2);
+  });
+
+  it('relevancia-küszöb: ha minden találat túl távoli → empty (grounded absztenció)', async () => {
+    const far = () =>
+      Promise.resolve([hit(5, 'Ismeretlen', 'jatekmenet'), hit(6, 'Ismeretlen', 'jatekmenet')]);
+    const result = await retrieve(q, deps({ search: far }), {
+      wideNet: 20,
+      keepTop: 5,
+      maxDistance: 0.4,
+    });
+    expect(result.empty).toBe(true);
+    expect(result.sources).toEqual([]);
+  });
 });
