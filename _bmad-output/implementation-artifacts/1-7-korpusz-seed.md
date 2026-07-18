@@ -1,5 +1,5 @@
 ---
-baseline_commit: 2e40ead
+baseline_commit: 7c4ea3f
 ---
 
 # Story 1.7: Korpusz-seed (a tudásbázis feltöltése valós szabályokkal)
@@ -28,20 +28,20 @@ so that az ingest valós, kereshető tudásbázist épít, és a golden set kié
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `seed/rules/` váz + konvenció** (AC: 1) — ÁGENS-VÉGEZHETŐ
-  - [ ] `seed/rules/` mappa létrehozása; `seed/rules/README.md` a fájlnév- és front matter-konvencióval, a kanonikus `section`-értékekkel és egy kitöltött példával.
-  - [ ] Front matter-sablon (másolható blokk) a README-ben.
-- [ ] **T2: Korpusz-validátor teszt** (AC: 2) — ÁGENS-VÉGEZHETŐ (TDD-barát)
-  - [ ] `seed/rules.spec.ts` (vagy `src/ingest/corpus.spec.ts`): beolvassa a `seed/rules/*.md`-t, mindegyikre `parseDocument` hibamentesen fut, a `source`-ok egyediek, a `section` kanonikus. **Üres korpusznál a teszt egyértelmű `skip`/útmutató** (ne legyen hamis zöld úgy, hogy nincs adat).
-  - [ ] A teszt a zöld-kapu része, amint van legalább 1 seed-fájl.
-- [ ] **T3: Korpusz-tartalom összeállítása** (AC: 3, 4) — TARTALOMGAZDA (nem automatizálható)
-  - [ ] A 8 játék hivatalos magyar szabálykönyveinek beszerzése (Gémklub/kiadó/BGG), PDF→markdown konvertálás.
-  - [ ] Szakaszokra bontás (`attekintes`/`elokeszules`/`jatekmenet`/`pontozas`/`gyik`), front matter felvétele (`source` = letöltési URL), kiadói zaj kézi átnézése (a normalizálás a többit viszi).
-  - [ ] Legalább a golden-set kérdéseihez szükséges játékok/szakaszok lefedése.
-- [ ] **T4: Élő ingest + verifikáció** (AC: 5) — KULCS-KÖTÖTT
-  - [ ] `.env` valós `OPENAI_API_KEY`-jel; `docker compose up -d`; `pnpm ingest`.
-  - [ ] Verifikáció: a `knowledge_documents`/`knowledge_chunks` a várt sorokat tartalmazza (SQL-lekérdezés vagy a Story 3.1 `debug:sources`); `pnpm ingest` másodszor → 0 embedding (hash-egyezés, Story 1.6).
-- [ ] **T5: Zöld-kapu** (AC: 1, 2) — `pnpm test` (a korpusz-validátorral) + `typecheck · lint · format:check` zöld.
+- [x] **T1: `seed/rules/` váz + konvenció** (AC: 1) — ÁGENS-VÉGEZHETŐ
+  - [x] `seed/rules/` mappa létrehozása; `seed/README.md` a fájlnév- és front matter-konvencióval, a kanonikus `section`-értékekkel, kitöltött példával és a placeholder-figyelmeztetéssel.
+  - [x] Front matter-sablon (másolható blokk) a README-ben.
+- [x] **T2: Korpusz-validátor teszt** (AC: 2) — ÁGENS-VÉGEZHETŐ
+  - [x] `src/ingest/corpus.spec.ts`: beolvassa a `seed/rules/*.md`-t, mindegyikre `parseDocument` hibamentes, a `source`-ok egyediek, a `section` kanonikus. Üres korpusznál `it.runIf` beszédes jelzés (nincs hamis zöld).
+  - [x] A teszt a zöld-kapu része (6 assert + 1 skip a jelenlegi minta-korpuszon).
+- [~] **T3: Korpusz-tartalom összeállítása** (AC: 3, 4) — RÉSZLEGES (minta kész; hiteles tartalom = tartalomgazda)
+  - [x] **Minta-korpusz** (jelölten NEM hiteles, `sample.invalid` source): Catan (elokeszules/jatekmenet/pontozas) + Azul (jatekmenet/pontozas) — 5 dokumentum, a pipeline végponti kipróbálásához.
+  - [ ] A 8 játék HIVATALOS magyar szabálykönyveinek beszerzése + PDF→markdown (tartalomgazda; nem automatizálható hallucináció nélkül).
+  - [ ] Teljes szakasz-lefedés + a golden-set kérdésekhez igazítás.
+- [~] **T4: Élő ingest + verifikáció** (AC: 5) — RÉSZLEGES (szintetikus e2e kész; valós kulcs függőben)
+  - [x] **Szintetikus élő futás** (OpenAI nélkül): `runIngest` a valós fs-olvasóval + determinisztikus ál-embedderrel + valós pg store-ral → 5 dokumentum / 17 chunk betöltve; keresés helyes forrás-payloaddal; MÁSODIK futás 0 embed, 5 kihagyott (hash-inkrementalitás élesben igazolva).
+  - [ ] Valós `OPENAI_API_KEY`-es `pnpm ingest` (a tényleges embedding-vektorokkal) — kulcs meglétekor.
+- [x] **T5: Zöld-kapu** (AC: 1, 2) — `pnpm test` (72 → 78 + 1 skip) + `typecheck · lint · format:check` zöld.
 
 ## Dev Notes
 
@@ -89,10 +89,28 @@ so that az ingest valós, kereshető tudásbázist épít, és a golden set kié
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- `pnpm test src/ingest/corpus.spec.ts` → 6 passed + 1 skipped (üres-korpusz jelző).
+- Szintetikus élő ingest (temp `tsx` szkript, OpenAI nélkül, futtatás után törölve): 1. futás 5 dok / 17 chunk betöltve; `search` helyes payload; 2. futás `skipped: 5`, `embeddedChunks: 0` (az ál-embedder meg sem hívódott).
+- Teljes kapu: `pnpm test` 78 passed + 1 skipped, `typecheck` · `lint` · `format:check` zöld.
 
 ### Completion Notes List
 
+- **Kész (ágens):** `seed/README.md` (konvenció + placeholder-figyelmeztetés + front matter-sablon); `src/ingest/corpus.spec.ts` korpusz-validátor (`parseDocument`, kanonikus `section`, egyedi `source`, üres-korpusz `it.runIf` jelzés).
+- **Kész (minta):** 5 db jelölten NEM hiteles minta-dokumentum (`sample.invalid` source) — Catan (3 szakasz) + Azul (2 szakasz). Kizárólag a pipeline végponti kipróbálásához; éles használat előtt cserélendő hivatalos tartalomra.
+- **Igazolva élesben (szintetikus):** a teljes ingest-lánc (parse → chunk → embed → store → search) a valós pgvectoron lefut; a hash-alapú inkrementalitás (2. futás 0 embed) élesben is működik.
+- **Függőben (nem ágens):** a hiteles, hivatalos korpusz-tartalom (tartalomgazda) és a valós `OPENAI_API_KEY`-es ingest (AC-3, AC-4). Emiatt a story `in-progress` marad — a váz és a validáció kész, a tartalom + éles kulcs külön.
+
 ### File List
 
+- `seed/README.md` (új — konvenció + figyelmeztetés)
+- `seed/rules/catan-elokeszules.md`, `catan-jatekmenet.md`, `catan-pontozas.md` (új — MINTA)
+- `seed/rules/azul-jatekmenet.md`, `azul-pontozas.md` (új — MINTA)
+- `src/ingest/corpus.spec.ts` (új — korpusz-validátor)
+
 ### Change Log
+
+- 2026-07-18: Story 1.7 részleges (correct-course után) — `seed/` váz + konvenció-README, korpusz-validátor teszt, jelölt minta-korpusz (Catan+Azul, 5 dok), szintetikus élő ingest-igazolás (5 dok/17 chunk, hash-inkrementalitás). Kapu zöld (78+1 skip). Hiteles tartalom + valós kulcs függőben → Status marad in-progress.
