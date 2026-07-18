@@ -1,8 +1,9 @@
 # Szabálymester — RAG-alapú társasjáték-szabály asszisztens
 
-> Természetes nyelvű társasjáték-szabály kérdésekre válaszol a hivatalos szabálykönyvekből,
-> **magyarul**, forrásmegjelöléssel (játék + szakasz). Jelenleg a **tervezési fázisban**
-> van: a kód a BMAD-workflow-val készül a `docs/` alatti tervek alapján.
+> Természetes nyelvű társasjáték-szabály kérdésekre válaszol a tudásbázisból, **magyarul**,
+> forrásmegjelöléssel (játék + szakasz + URL). A pipeline **működik**: ingest → keresés
+> (HyDE + rerank) → grounded agent-válasz + CLI + golden-set kiértékelés. A modellek
+> futtathatók **helyi Ollamán** (ingyenes, ld. `docs/local-mode.md`) vagy felhőben (OpenAI + Anthropic).
 
 ## A projekt egy mondatban
 
@@ -39,24 +40,45 @@ routing — plusz külön architektúra-spec a tudásbázis karbantartásáról.
 
 ## Tudásbázis (korpusz)
 
-7-8 népszerű játék hivatalos magyar szabálykönyve (Catan, Carcassonne, Ticket to Ride,
-Pandémia, 7 Csoda, Azul, Splendor, King of Tokyo), játékonként 3-4 tagolt markdownban
-(áttekintés / előkészület / játékmenet / pontozás-GYIK) → ~24-28 dokumentum, > 15 000 szó.
-Forrás: hivatalos magyar szabály-PDF-ek (Gémklub / kiadói oldal / BoardGameGeek *Files*),
-a `source` mezőben a letöltési URL-lel.
+~22 népszerű társasjáték leírása **jogtiszta, CC BY-SA 4.0 forrásból** (angol Wikipédia +
+néhány Wikibooks), a szabály-releváns szakaszokra szűrve → **54 dokumentum, ~17 600 szó**,
+minden fájlban attribúcióval. A `source` a cikk-URL + szakasz-horgony. A hivatalos, jogvédett
+kiadói szabálykönyveket NEM használjuk. Részletek: `seed/README.md`. A korpusz angol, a válasz
+magyar (kereszt-nyelvű RAG). **Gloomhaven** szándékosan kimarad (a golden-set negatív tesztje).
 
 ## Tervezett stack
 
 TypeScript (strict) + Node LTS + pnpm · PostgreSQL 17 + pgvector (docker-compose) ·
 Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) · Zod · Vitest · tsx
 
-## Költségbecslés
+## Költségbecslés (mért)
 
-*(A tényleges futások után töltendő a `docs/koltsegbecsles.md` sablonja szerint.)*
-Előzetes nagyságrend: ingest ~fél cent (~80-100K embedding-token); egy kérdés a teljes
-pipeline-nal ~$0.03 (~10-12 Ft), amiből ~85% a válasz-modell.
+A fejlesztés **helyi Ollamán** futott → a tényleges pénzköltség **$0** (ingyenes). A mért
+token-használat viszont valós, és ebből a felhő-projekció kiszámolható (`src/eval/cost.ts`):
+
+| Művelet | Mért token | Lokális (Ollama) | Felhő-projekció |
+|---|---|---|---|
+| **Ingest** (54 dok / 157 chunk) | ~28 500 embedding-token | **$0** | ~$0.0006 (embedding centtört) |
+| **Egy kérdés** (teljes pipeline) | ~7–8 000 token (HyDE + embedding + rerank + válasz) | **$0** | ~$0.02–0.03, amiből **~85% a válasz-modell** |
+
+A válasz-modell (Claude Sonnet felhőben) dominálja a kérdés-költséget — ezért éri meg az
+olcsó modellt keresésre, az erőset csak a válaszra használni (routing, `docs/routing.md`).
+Módszertan: `docs/koltsegbecsles.md`.
 
 ## Futtatás
 
-*(A kód elkészülte után töltendő: docker compose up, pnpm ingest, pnpm cli ask,
-pnpm eval:golden-set, debug-parancsok.)*
+```bash
+pnpm install
+docker compose up -d --wait      # PostgreSQL 17 + pgvector
+pnpm db:schema                   # séma alkalmazása (meglévő köteten)
+cp .env.example .env             # majd töltsd ki (felhő-kulcsok VAGY lokális Ollama — ld. docs/local-mode.md)
+pnpm ingest                      # korpusz → chunk → embed → pgvector (inkrementális; --rebuild a teljes újraépítéshez)
+pnpm cli ask "Catanban mi történik, ha 7-est dobok?"
+pnpm debug:sources               # mi van a tudásbázisban
+pnpm debug:search "..." --full   # nyers vs. teljes retrieval (trace-szel)
+pnpm eval:golden-set             # golden set: nyers vs. teljes + negatív teszt → docs/golden-set-eredmenyek.md
+pnpm test                        # unit tesztek
+```
+
+**Lokális (ingyenes) mód:** Ollama + a `.env` base-URL override — a teljes lánc fizetős API
+nélkül fut. Lépésről lépésre: [`docs/local-mode.md`](docs/local-mode.md).
