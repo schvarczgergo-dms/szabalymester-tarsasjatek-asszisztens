@@ -55,7 +55,7 @@ development_status:
   1-4-determinisztikus-chunkolas: done
   1-5-embedding-es-tarolas: done
   1-6-inkrementalis-ingest: done
-  1-7-korpusz-seed: ready-for-dev
+  1-7-korpusz-seed: in-progress
   epic-1-retrospective: optional
 
   epic-2: backlog
