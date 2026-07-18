@@ -115,3 +115,24 @@ kontextus → magyar válasz**" a nehéz; azonos nyelven már használható.
   tool-hívás, nincs hallucináció); a válasz-pontosság a kereszt-nyelvűség miatt korlátozott.
 - A `debug:search --full` bizonyítja, hogy a releváns chunk a kontextusban van → a hiba a
   válasz-generálásban (modell-erő + nyelv), nem a keresésben.
+
+### 6.1 Küszöb-kikapcsolás + magyar válasz (árnyalás)
+
+A relevancia-küszöb kikapcsolásával (`RELEVANCE_MAX_DISTANCE=1`) és **magyar** válasszal újrafuttatva
+a `qwen3:4b-instruct` a vártnál jobban teljesített:
+
+- **Tud magyarul, groundeltan, forrással válaszolni angol kontextusból** — a „7 Wondersben hogyan
+  pontozódnak a tudomány-szimbólumok?" kérdésre helyes magyar választ adott (a tudomány-szimbólumok
+  pontképlete), „Forrás: 7 Wonders · jatekmenet (URL)" hivatkozással. A kereszt-nyelvűség tehát
+  **nem lehetetlen** a 4B-nek — akkor sikerül, ha a retrieval **tisztán** hozza a releváns chunkot
+  (a 7 Wonders a golden-setben is rang 1 volt).
+- **Küszöb NÉLKÜL is helyesen absztenál a negatív tesztre** (Gloomhaven → „nincs információm"),
+  vagyis a modellnek **saját grounding-fegyelme** van — nem hallucinál (szemben a `qwen2.5:3b`-vel,
+  amelynek ehhez kellett a küszöb). A relevancia-küszöb így nála extra biztonság, nem az egyetlen védelem.
+- Az Azul/Catan absztenció oka **retrieval-zaj** (a top-K-t más játékok — pl. Carcassonne — uralták)
+  + a kereszt-nyelvi nehézség a határeseteknél, nem a modell „lustasága".
+
+**Finomított következtetés:** a `qwen3:4b-instruct` szolid helyi választás (nem hallucinál, tud
+magyarul grounded választ adni tiszta retrievalnél); a fő korlát a **retrieval-pontosság a
+határeseteknél** (Wikipédia-mélység + kereszt-nyelv). Éles, konzisztens magyar minőséghez továbbra is
+erős felhő válasz-modell ajánlott; a küszöb a gyengébb (hallucináló) modelleknél marad hasznos.
