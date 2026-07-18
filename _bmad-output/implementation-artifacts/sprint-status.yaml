@@ -48,13 +48,14 @@ tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 
 development_status:
-  epic-1: done
+  epic-1: in-progress
   1-1-projektvaz-es-konfiguracio: done
   1-2-tudasbazis-sema: done
   1-3-dokumentum-parse: done
   1-4-determinisztikus-chunkolas: done
   1-5-embedding-es-tarolas: done
   1-6-inkrementalis-ingest: done
+  1-7-korpusz-seed: ready-for-dev
   epic-1-retrospective: optional
 
   epic-2: backlog
