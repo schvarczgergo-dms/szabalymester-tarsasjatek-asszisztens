@@ -13,24 +13,56 @@ export class ConfigError extends Error {
   }
 }
 
-/** Kötelező, nem üres string; undefined és üres érték egyaránt beszédes hibát ad (Zod 4). */
-const required = (name: string) =>
+/** Üres vagy csak-whitespace értéket `undefined`-dé alakít (így az opcionális mezők
+ *  a `.default()`-ra esnek vissza, nem hasalnak el); a stringeket trimmeli. */
+const blankToUndefined = (value: unknown): unknown => {
+  const trimmed = typeof value === 'string' ? value.trim() : value;
+  return trimmed === '' || trimmed == null ? undefined : trimmed;
+};
+
+/** Kötelező, nem üres string; undefined/üres/whitespace egyaránt beszédes hibát ad (Zod 4).
+ *  A titok trimmelődik (a másolásból ragadt whitespace nem okoz gondot). A hibaüzenet az
+ *  ENV-változó nevét a {@link loadConfig} hibaépítője adja hozzá (ld. KEY_TO_ENV). */
+const required = () =>
   z.preprocess(
-    (value) => (value == null ? '' : value),
-    z.string().min(1, `${name} hiányzik vagy üres — állítsd be a .env-ben`),
+    (value) => (value == null ? '' : String(value).trim()),
+    z.string().min(1, 'hiányzik vagy üres — állítsd be a .env-ben'),
   );
 
-/** Opcionális, nem üres string alapértelmezéssel. */
-const withDefault = (fallback: string) => z.string().min(1).default(fallback);
+/** Opcionális, nem üres string alapértelmezéssel; üres/whitespace érték → default. */
+const withDefault = (fallback: string) =>
+  z.preprocess(blankToUndefined, z.string().min(1).default(fallback));
 
-/** Pozitív egész env-változó (stringből konvertálva) alapértelmezéssel. */
-const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
+/** Pozitív egész env-változó alapértelmezéssel; üres/whitespace → default. */
+const positiveInt = (fallback: number) =>
+  z.preprocess(
+    blankToUndefined,
+    z.coerce
+      .number()
+      .int('egész számnak kell lennie')
+      .positive('pozitív számnak kell lennie')
+      .default(fallback),
+  );
+
+/** A séma-kulcsok → ENV-változónevek leképezése (a hibaüzenetek az ENV-nevet mutatják). */
+const KEY_TO_ENV: Record<string, string> = {
+  openaiApiKey: 'OPENAI_API_KEY',
+  anthropicApiKey: 'ANTHROPIC_API_KEY',
+  databaseUrl: 'DATABASE_URL',
+  embeddingModel: 'EMBEDDING_MODEL',
+  embeddingDimensions: 'EMBEDDING_DIMENSIONS',
+  hydeModel: 'HYDE_MODEL',
+  rerankModel: 'RERANK_MODEL',
+  answerModel: 'ANSWER_MODEL',
+  wideNet: 'WIDE_NET',
+  keepTop: 'KEEP_TOP',
+};
 
 const configSchema = z.object({
   // Titkok — a rendszer nem indul el nélkülük.
-  openaiApiKey: required('OPENAI_API_KEY'),
-  anthropicApiKey: required('ANTHROPIC_API_KEY'),
-  databaseUrl: required('DATABASE_URL'),
+  openaiApiKey: required(),
+  anthropicApiKey: required(),
+  databaseUrl: required(),
 
   // Modell-szereposztás (az architektúra-spine web-ellenőrzött értékei) — mind felülírható env-ből.
   embeddingModel: withDefault('text-embedding-3-small'),
@@ -69,7 +101,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
   if (!parsed.success) {
     const issues = parsed.error.issues
-      .map((issue) => `  - ${issue.path.join('.') || '(gyökér)'}: ${issue.message}`)
+      .map((issue) => {
+        const key = String(issue.path[0] ?? '');
+        const envName = KEY_TO_ENV[key] ?? key ?? '(gyökér)';
+        return `  - ${envName}: ${issue.message}`;
+      })
       .join('\n');
     throw new ConfigError(`Hibás vagy hiányzó környezeti változók:\n${issues}`);
   }

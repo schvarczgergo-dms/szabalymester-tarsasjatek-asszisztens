@@ -4,7 +4,7 @@ baseline_commit: bfe0c2fdfc6c5d8d2cce323ab2c6f93c71f0acae
 
 # Story 1.1: Projektváz és fail-fast konfiguráció
 
-Status: review
+Status: done
 
 ## Story
 
@@ -45,6 +45,12 @@ so that a rendszer determinisztikusan és biztonságosan indul, és a többi sto
   - [x] érvényes env; alapértelmezések; modellnév-felülírás; numerikus konverzió (`WIDE_NET`/`KEEP_TOP`); hiányzó kulcs → `ConfigError` + a változó neve; üres kulcs → hiba; érvénytelen numerikus → hiba; nem-pozitív paraméter → hiba.
 - [x] **T8: Zöld-kapu** (AC: 1, 2)
   - [x] `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test` zöld; `docker compose config -q` OK.
+
+### Review Findings
+
+- [x] [Review][Patch] Env-normalizálás: a stringek trimmelése + üres/whitespace érték kezelése — opcionális/numerikus mezőnél essen vissza a defaultra, kötelezőnél utasítsa el (env-névvel). Forrás: blind+edge. [src/config.ts:22-27]
+- [x] [Review][Patch] A hibaüzenet nevezze meg az ENV-változót a numerikus/opcionális mezőknél is (most a camelCase kulcsot mutatja). Forrás: edge. [src/config.ts:24-27,70-72]
+- [x] [Review][Defer] `keepTop ≤ wideNet` kereszt-validáció [src/config.ts:41-42] — deferred: a Story 2.1-nél, a tényleges wideNet/keepTop használatakor érdemes hozzáadni.
 
 ## Dev Notes
 
@@ -139,3 +145,4 @@ Claude Opus 4.8 (`claude-opus-4-8`)
 ### Change Log
 
 - 2026-07-18: Story 1.1 implementálva — projektváz + fail-fast config, 8/8 teszt zöld, DB healthy. Status → review.
+- 2026-07-18: Code review — 2 patch alkalmazva (env-normalizálás: trim + üres/whitespace → default; ENV-nevű hibaüzenetek), config.spec.ts 8→13 teszt, zöld-kapu. 1 defer (keepTop ≤ wideNet → Story 2.1). Status → done.
