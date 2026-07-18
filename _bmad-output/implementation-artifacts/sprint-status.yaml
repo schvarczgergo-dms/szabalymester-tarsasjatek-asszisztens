@@ -64,8 +64,8 @@ development_status:
   2-3-cli-belepopont: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-debug-parancsok-es-trace: backlog
+  epic-3: in-progress
+  3-1-debug-parancsok-es-trace: ready-for-dev
   3-2-golden-set: backlog
   3-3-koltseg-naplozas: backlog
   epic-3-retrospective: optional
