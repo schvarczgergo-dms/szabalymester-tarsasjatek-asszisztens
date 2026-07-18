@@ -1,10 +1,10 @@
 ---
-baseline_commit: 1b4bb76
+baseline_commit: dadaae7
 ---
 
 # Story 3.3: Token-/költség-naplózás és becslés
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -21,9 +21,9 @@ so that ismert az ingest és egy kérdés valós költsége.
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `src/eval/cost.ts` (+ `.spec.ts`)** (AC: 2) — `estimateCostUsd(tokensByRole, prices)` + alap ár-tábla (felhő) + lokális (0). Unit-teszt.
-- [ ] **T2: README frissítés** (AC: 3, 4) — „Futtatás" (valós parancsok, lokális + felhő) és „Költségbecslés" (mért tokenek: ingest ~28,5K; egy kérdés ~7-8K, ~85% válasz-modell; lokális $0 + felhő-projekció). A stale „tervezési fázis" + korpusz-leírás (most Wikipédia CC BY-SA) frissítése.
-- [ ] **T3: Zöld-kapu** — `pnpm test` + `typecheck · lint · format:check` zöld.
+- [x] **T1: `src/eval/cost.ts` (+ `.spec.ts`)** — `estimateCostUsd` + felhő/lokális ár-tábla; 4 unit teszt (köztük a válasz-modell >80% dominancia).
+- [x] **T2: README frissítés** — „Futtatás" (valós parancsok, lokális + felhő) és „Költségbecslés" (mért: ingest ~28,5K token; kérdés ~7-8K, ~85% válasz; lokális $0 + felhő-projekció táblázat); intro + korpusz-leírás frissítve (CC BY-SA Wikipédia, 54 dok).
+- [x] **T3: Zöld-kapu** — `pnpm test` 183 pass +1 skip; `typecheck · lint · format:check` zöld.
 
 ## Dev Notes
 
@@ -50,10 +50,23 @@ so that ismert az ingest és egy kérdés valós költsége.
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- Unit: `cost.spec.ts` 4 teszt; teljes csomag 183 pass + 1 skip; typecheck/lint/format zöld.
 
 ### Completion Notes List
 
+- `src/eval/cost.ts`: `estimateCostUsd(tokensByRole, prices)` tiszta aggregáló + `CLOUD_PRICES`/`LOCAL_PRICES` ár-tábla. A usage-plumbing (embed/retrieve/agent/ingest) már megvolt (AD-11); ez a költség-réteg.
+- `README.md`: valós „Futtatás" (docker → ingest → cli → debug → eval → test; lokális + felhő) és „Költségbecslés" (mért tokenek táblázatban, lokális $0 + felhő-projekció, válasz-modell ~85% dominancia). Az intro/korpusz-leírás a valós állapotra frissítve (CC BY-SA, 54 dok, kereszt-nyelvű).
+- **Lokális futás valós költsége $0** (Ollama); a felhő-szám projekció (a `docs/koltsegbecsles.md` módszertanával).
+
 ### File List
 
+- `src/eval/cost.ts`, `src/eval/cost.spec.ts` (új)
+- `README.md` (módosítva — intro, korpusz, Futtatás, Költségbecslés)
+
 ### Change Log
+
+- 2026-07-18: Story 3.3 implementálva — költség-aggregáló (`cost.ts`) + README valós futtatás/költség szekciók (mért tokenek, lokális $0 + felhő-projekció). Status → done. Ezzel az Epic 3 kész.
