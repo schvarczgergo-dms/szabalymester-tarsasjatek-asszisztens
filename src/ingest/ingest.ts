@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { contentHash, parseDocument } from './parse-document';
 import { chunkDocument, type ChunkOptions } from './chunk';
 import { loadConfig } from '../config';
@@ -128,11 +129,21 @@ export async function runIngest(
   const failed: { source: string; error: string }[] = [];
   const entries = await deps.readCorpus();
 
-  // Parse + chunk + hash — hiba-izolálva dokumentumonként.
+  // Parse + chunk + hash — hiba-izolálva dokumentumonként; a duplikált source is hiba (AD-10).
   const prepared: PreparedDoc[] = [];
+  const seenSources = new Set<string>();
   for (const entry of entries) {
     try {
       const parsed = parseDocument(entry.raw);
+      const source = parsed.frontMatter.source;
+      if (seenSources.has(source)) {
+        failed.push({
+          source,
+          error: `Duplikált source a korpuszban: ${source} — egy fájl = egy (game, section) (AD-10).`,
+        });
+        continue;
+      }
+      seenSources.add(source);
       const hash = contentHash(parsed.body);
       const chunks = chunkDocument(parsed, deps.chunkOptions);
       prepared.push({
@@ -204,13 +215,21 @@ export async function runIngest(
     }
   }
 
+  // Biztonsági védelem: üres korpusz esetén NE töröljük a teljes tudásbázist (elgépelt út /
+  // hiányzó seed/rules → readCorpus üres). A tömeges soft-delete-et csak nem-üres korpusz váltja ki.
   let deleted = 0;
-  for (const source of plan.toDelete) {
-    try {
-      await deps.store.markDeleted(source);
-      deleted += 1;
-    } catch (error) {
-      failed.push({ source, error: (error as Error).message });
+  if (entries.length === 0 && plan.toDelete.length > 0) {
+    deps.log?.(
+      'Figyelem: üres korpusz — a törlési fázis kihagyva (biztonsági védelem a tudásbázis kiürítése ellen).',
+    );
+  } else {
+    for (const source of plan.toDelete) {
+      try {
+        await deps.store.markDeleted(source);
+        deleted += 1;
+      } catch (error) {
+        failed.push({ source, error: (error as Error).message });
+      }
     }
   }
 
@@ -278,7 +297,9 @@ async function main(): Promise<void> {
 }
 
 // Közvetlen futtatáskor (tsx src/ingest/ingest.ts) indul; importáláskor (teszt) nem.
-if (process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`) {
+// A pathToFileURL cross-platform (Windows `file:///C:/...` is helyesen illeszkedik).
+const invokedPath = process.argv[1];
+if (invokedPath && import.meta.url === pathToFileURL(invokedPath).href) {
   main().catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

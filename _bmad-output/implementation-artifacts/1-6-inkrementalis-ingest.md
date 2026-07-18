@@ -4,7 +4,7 @@ baseline_commit: 5575686
 
 # Story 1.6: Inkrementális ingest-futás
 
-Status: review
+Status: done
 
 ## Story
 
@@ -38,8 +38,16 @@ so that csak a változott tartalom vektorizálódik újra, és a frissítés olc
   - [x] `deps` = injektált külvilág (`readCorpus`, `embed`, `store`); a tiszta lépések közvetlen import. Hiba-izoláció dokumentumonként.
 - [x] **T4: `pnpm ingest` belépőpont + `--rebuild`** (AC: 3) — UPDATE `package.json`
   - [x] `"ingest": "tsx src/ingest/ingest.ts"`; `main()` `loadConfig()` + `checkEmbeddingDimensions` fail-fast, valós fs/OpenAI/pg deps, `--rebuild` a `process.argv`-ból, riport-log.
-- [x] **T5: Zöld-kapu** (AC: 5) — `pnpm test` (60 → 70) + `pnpm typecheck · lint · format:check` zöld.
+- [x] **T5: Zöld-kapu** (AC: 5) — `pnpm test` (60 → 72) + `pnpm typecheck · lint · format:check` zöld.
 - [x] **T6 (opcionális): Élő ingest-próba** — HALASZTVA: nincs `seed/rules` korpusz és nincs `OPENAI_API_KEY` a környezetben (a korpusz-seed külön feladat). A döntés-logikát a `planSync`/`runIngest` unit tesztek fedik; a `main()` wiring kézzel futtatható, amint a korpusz + kulcs elérhető.
+
+### Review Findings
+
+- [x] [Review][Patch] A `main()` belépő-guard Windows-on sosem illeszkedett (`file://` kézi összefűzés vs. a valós `file:///C:/…`), így a `pnpm ingest` nem indult volna — `pathToFileURL(argv[1]).href` cross-platform összevetés. Forrás: blind (High). [ingest.ts:entry-guard]
+- [x] [Review][Patch] Üres/hiányzó `seed/rules` esetén a `planSync` MINDEN aktív dokumentumot törlésre jelölt → egy elgépelt út kiüríthette volna a tudásbázist. Biztonsági guard: üres korpusznál a törlési fázis kimarad (+ teszt). Forrás: edge (High). [ingest.ts:runIngest]
+- [x] [Review][Patch] Duplikált `source` a korpuszban némán felülírta egymást (AD-10 sérül) — a második előfordulás a `failed`-be kerül, nem íródik felül (+ teszt). Forrás: edge (Med). [ingest.ts:prepare]
+- [x] [Review][Defer] `pipeline_version` tárolt oszlop + auto-detektálás — spine-Deferred; a v1 a `PIPELINE_VERSION` konstanst + kézi `--rebuild`-et használja.
+- [x] [Review][Defer] Élő ingest-próba (fs + OpenAI) — korpusz-seed és API-kulcs hiányában halasztva; a logika unit-fedett.
 
 ## Dev Notes
 
@@ -117,3 +125,4 @@ Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból (Claude Code limit után foly
 ### Change Log
 
 - 2026-07-18: Story 1.6 implementálva — hash-alapú inkrementális ingest (`planSync`/`runIngest`), store `listForSync`/`markDeleted` (soft-delete audit + revival), `--rebuild`, usage-riport; TDD 10 új teszt (60→70). Status → review.
+- 2026-07-18: Code review — 3 patch (Windows belépő-guard, üres-korpusz törlésvédelem, duplikált source), +2 teszt (70→72), zöld-kapu. 2 defer (pipeline_version oszlop, élő próba). Status → done.
