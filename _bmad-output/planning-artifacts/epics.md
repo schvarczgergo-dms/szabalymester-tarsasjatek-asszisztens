@@ -201,6 +201,28 @@ So that csak a változott tartalom vektorizálódik újra, és a frissítés olc
 **And** `--rebuild` mindent újravektorizál a hash-től függetlenül; a pipeline-verzió eltérése is teljes újraépítést követel (FR-5).
 **And** minden modellhívás naplózza a token-használatot (usage) (FR-23 részben, AD-11).
 
+### Story 1.7: Korpusz-seed (a tudásbázis feltöltése valós szabályokkal)
+
+As a tartalomgazda/üzemeltető,
+I want a hivatalos magyar szabályok kurált, front-matteres markdown-korpuszát a `seed/rules/`-ben,
+So that az ingest valós, kereshető tudásbázist épít, és a golden set kiértékelhető (Epic 1 célja csak így teljesül).
+
+> Megjegyzés (utólag felvett story — correct-course, 2026-07-18): a korpusz az FR-1 bemenete, de a
+> pipeline-story-k (1.1–1.6) nem állítják elő. Ez a story zárja az űrt. A **valós szabályszöveg
+> hivatalos forrásból** származik (nem generált — a grounding alapja); az agent a struktúrát, a
+> konvenciót, a validálást és (kulcs birtokában) az élő ingestet végzi.
+
+**Acceptance Criteria:**
+
+**Given** a felállt ingest-pipeline (1.1–1.6),
+**When** a `seed/rules/` korpusz elkészül,
+**Then** minden korpusz-fájl egy `(game, section)` dokumentum (AD-10), kötelező és valid front matterrel (`title`, `game`, `source` = hivatalos letöltési URL, `section` a kanonikus öt érték egyike), és mind átmegy a `parseDocument`-en (nem üres törzs, egyedi `source`) (FR-1).
+**And** a lefedettség a golden-sethez igazodik: a `docs/golden-set.md` javasolt játékai (Catan, Carcassonne, Ticket to Ride, Pandémia, 7 Csoda, Azul, Splendor, King of Tokyo), releváns szakaszokra bontva (~24–28 dokumentum, terv §2).
+**And** a tartalom kizárólag hivatalos magyar szabálykönyvekből származik (Gémklub/kiadó/BGG Files); kitalált szabály tilos (grounding, AD-1).
+**And** a `pnpm ingest` valós `OPENAI_API_KEY`-jel lefut a korpuszon, és a betöltött dokumentumok/chunkok ellenőrizhetők (a live-run a kulcs meglétéhez kötött; a struktúra + validálás kulcs nélkül is kész).
+
+**FRs covered:** FR-1 (adat-oldal); az Epic 2/3 valós előfeltétele.
+
 ## Epic 2: Kérdés → grounded válasz
 
 A magyar kérdéstől a forrásmegjelölt, grounded válaszig — a termék magja.
