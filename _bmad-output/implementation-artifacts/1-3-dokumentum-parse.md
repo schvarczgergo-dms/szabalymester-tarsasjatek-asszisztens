@@ -4,7 +4,7 @@ baseline_commit: b230367
 
 # Story 1.3: Dokumentum-parse
 
-Status: review
+Status: done
 
 ## Story
 
@@ -32,6 +32,16 @@ so that a korpusz megbízhatóan, zaj nélkül kerül a pipeline-ba, és a hash 
   - [x] `parseDocument(raw)`: front matter kivágás → Zod-validáció → `{ frontMatter, body: normalize(raw) }`.
 - [x] **T3: Zöld-kapu** (AC: 3)
   - [x] `pnpm test` (a régi 13 + az újak) zöld; `pnpm typecheck && pnpm lint && pnpm format:check` zöld.
+
+### Review Findings
+
+- [x] [Review][Patch] `normalize` delimiter trailing-WS tolerancia — a `---␣` záró sor különben nem illeszkedik, és a lenient `normalize` a teljes front mattert a törzsbe/hashbe engedi. Forrás: edge. [parse-document.ts:38]
+- [x] [Review][Patch] Zaj-minták szűkítése anchored/whole-line-ra — a substring-alapú `©`/`gemklub.hu` legitim tartalmi sort is eldob. Forrás: blind+edge. [parse-document.ts:41]
+- [x] [Review][Patch] Kép-regex non-greedy (`[^\]]`/`[^)]`) — a `![a](x) szöveg ![b](y)` sor közti tartalom ne vesszen el. Forrás: blind. [parse-document.ts:45]
+- [x] [Review][Patch] `parseDocument` fail-fast üres normalizált törzsre (csak-front-matter / csak-zaj dokumentum). Forrás: edge. [parse-document.ts]
+- [x] [Review][Patch] Hibaüzenet nevezze a `source`-ot, ha a blokkban jelen van; doc-komment pontosítása (lépéssorrend, „2+ üres sor"). + tesztek: kombinált hash-invariancia (zaj-sor → azonos hash), üres-törzs-hiba, greedy-kép megtartás. Forrás: auditor+blind. [parse-document.ts, parse-document.spec.ts]
+- [x] [Review][Defer] Idézőjel nélküli érték ` #`-csonkolása minden mezőre — YAML-konzisztens, a kerülő az idézőjelezés; a korpusz értékei nem tartalmaznak ` #`-et. Nem javítjuk.
+- [x] [Review][Defer] Duplikált front-matter kulcs néma last-wins — determinista, a korpuszban nem fordul elő.
 
 ## Dev Notes
 
@@ -94,3 +104,4 @@ Claude Opus 4.8 (`claude-opus-4-8`)
 ### Change Log
 
 - 2026-07-18: Story 1.3 implementálva — dokumentum-parse + normalize + contentHash, TDD (RED→GREEN), 25/25 teszt. Status → review.
+- 2026-07-18: Code review — 5 patch (delimiter trailing-WS tolerancia, zaj-minta szűkítés, non-greedy kép-regex, üres-törzs fail-fast, source a hibában + doc-komment), 3 új teszt (28 összesen), zöld-kapu. 2 defer. Status → done.
