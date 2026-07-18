@@ -1,10 +1,10 @@
 ---
-baseline_commit: 10ed0aa
+baseline_commit: 44a673b
 ---
 
 # Story 3.1: Debug-parancsok és trace-láthatóság
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -21,14 +21,10 @@ so that a RAG-hibákat előbb a retrievalben tudom keresni, nem a generálásban
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `src/cli.ts` bővítése (+ `cli.spec.ts`) — TDD** (AC: 1, 2, 4)
-  - [ ] `parseCliArgs` új parancsai: `debug:sources`, `debug:search` (`--full` flag + kérdés összefűzve).
-  - [ ] `formatDocumentList(docs)` és `formatSearchResult(label, hits, trace?)` tiszta formázók.
-  - [ ] `main()` dispatch: `debug:sources` → `store.list()`; `debug:search` → nyers (`embed`+`search`) vagy `--full` (`retrieve`), a trace kiírásával.
-  - [ ] Tesztek: `parseCliArgs` (debug:sources, debug:search --full/kérdéssel); a formázók (dokumentum-lista, találat-lista távolsággal).
-- [ ] **T2: `package.json` scriptek** (AC: 1, 2) — `"debug:sources": "tsx src/cli.ts debug:sources"`, `"debug:search": "tsx src/cli.ts debug:search"`.
-- [ ] **T3: Zöld-kapu** (AC: 4) — `pnpm test` + `typecheck · lint · format:check` zöld.
-- [ ] **T4 (opcionális): Éles smoke** — `pnpm debug:sources` és `pnpm debug:search "..." --full` az Ollamán.
+- [x] **T1: `src/cli.ts` bővítése (+ `cli.spec.ts`) — TDD** — `parseCliArgs` (debug:sources, debug:search + `--full`), `formatDocumentList`, `formatSearchResult` (trace-szel); `main` dispatch (sources → `store.list`; search nyers `embed`+`search` / `--full` `retrieve`). 8 új unit teszt.
+- [x] **T2: `package.json` scriptek** — `debug:sources`, `debug:search`.
+- [x] **T3: Zöld-kapu** — `pnpm test` + `typecheck · lint · format:check` zöld.
+- [x] **T4: Éles smoke** — `debug:sources` (aktív + soft-delete audit látszik), `debug:search` nyers (magyar→angol gyenge, táv ~0.48–0.53) — a golden-set (3.2) baseline-ja.
 
 ## Dev Notes
 
@@ -57,10 +53,23 @@ so that a RAG-hibákat előbb a retrievalben tudom keresni, nem a generálásban
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- Unit: `cli.spec.ts` +8 teszt (debug parse + formázók); teljes csomag zöld.
+- Éles smoke: `debug:sources` (aktív + deleted audit), `debug:search` nyers (magyar→angol táv ~0.48–0.53).
 
 ### Completion Notes List
 
+- `src/cli.ts` bővítve: `debug:sources` (`store.list` → dokumentum-lista chunk-számmal/státusszal), `debug:search "<q>" [--full]` (nyers: a kérdés közvetlen embeddingje + `search`; teljes: `retrieve` HyDE+rerank + trace). `formatDocumentList`/`formatSearchResult` tiszta, tesztelt.
+- `package.json`: `debug:sources`, `debug:search` scriptek.
+- A `debug:sources` a soft-delete audit-sorokat is mutatja (deleted, 0 chunk) — az AD-5 audit-nyom láthatósága.
+
 ### File List
 
+- `src/cli.ts` (módosítva), `src/cli.spec.ts` (módosítva), `package.json` (módosítva)
+
 ### Change Log
+
+- 2026-07-18: Story 3.1 implementálva — `debug:sources` + `debug:search [--full]` (nyers vs. teljes pipeline, trace-szel), TDD 8 új teszt, élő smoke. Status → done.
