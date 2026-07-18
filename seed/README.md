@@ -5,12 +5,15 @@ alakítva, front matterrel. Az `ingest` (`pnpm ingest`) ezt a mappát olvassa.
 
 ## Forrás és licenc
 
-- **Angol nyelvű Wikipédia-cikkek** (a 8 tervezett játékhoz), a **szabály-releváns szakaszokra**
-  szűrve (áttekintés + játékmenet; az előkészület/pontozás jellemzően a játékmenet alá ágyazva).
-- Licenc: **CC BY-SA 4.0** — minden fájl elején attribúció (cikk címe + URL + „Wikipedia
+- **Angol nyelvű Wikipédia-cikkek** (~22 népszerű társasjáték, a golden-set 8 magjával + további
+  címek a korpusz-mélységhez) és néhány **Wikibooks** klasszikus-játék szabály — a **szabály-releváns
+  szakaszokra** szűrve (áttekintés + játékmenet; az előkészület/pontozás gyakran a játékmenet alá ágyazva).
+- Licenc: **CC BY-SA 4.0** — minden fájl elején attribúció (cikk címe + URL + „Wikipedia/Wikibooks
   contributors" + licenc). A hivatalos, jogvédett kiadói szabálykönyveket NEM használjuk.
 - A tartalom **nem hivatalos szabálykönyv**, hanem enciklopédikus, tényszerű leírás; a származékos
-  változatok (pl. módosítás, fordítás) is CC BY-SA 4.0 alatt maradnak.
+  változatok is CC BY-SA 4.0 alatt maradnak.
+- **Méret (HF3 követelmény teljesül):** ~54 dokumentum, ~17 600 szó, több altémával.
+- Kihagyva: **Gloomhaven** — szándékosan, mert a golden-set negatív tesztje („nincs a korpuszban").
 
 ## Nyelv
 
