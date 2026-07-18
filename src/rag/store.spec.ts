@@ -207,3 +207,47 @@ describe('createStore.list / delete', () => {
     expect(f.poolCalls[0]!.params).toEqual(['s']);
   });
 });
+
+describe('createStore.listForSync', () => {
+  it('a source-t, a content_hash-t és a státuszt adja (a szinkron-döntéshez)', async () => {
+    const f = makeFakeDb({
+      rows: [{ source: 's', content_hash: 'h1', status: 'active' }],
+    });
+    const store = createStore(f.db, { dimensions: 3 });
+
+    const docs = await store.listForSync();
+
+    expect(f.poolCalls[0]!.sql).toMatch(/content_hash/i);
+    expect(f.poolCalls[0]!.sql).toMatch(/from knowledge_documents/i);
+    expect(docs[0]).toEqual({ source: 's', contentHash: 'h1', status: 'active' });
+  });
+});
+
+describe('createStore.markDeleted', () => {
+  it('soft-delete egy tranzakcióban: a chunkokat törli, a dokumentum-sort status=deleted-re állítja (megtartja)', async () => {
+    const f = makeFakeDb();
+    const store = createStore(f.db, { dimensions: 3 });
+
+    await store.markDeleted('s');
+
+    const sqls = f.clientCalls.map((c) => c.sql.toUpperCase());
+    expect(sqls[0]).toContain('BEGIN');
+    expect(sqls[sqls.length - 1]).toContain('COMMIT');
+    expect(sqls.some((s) => s.includes('DELETE FROM KNOWLEDGE_CHUNKS'))).toBe(true);
+    expect(
+      sqls.some((s) => s.includes('UPDATE KNOWLEDGE_DOCUMENTS') && s.includes('DELETED')),
+    ).toBe(true);
+    expect(f.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('hibánál ROLLBACK és a kliens felszabadul', async () => {
+    const f = makeFakeDb({ failOn: /UPDATE knowledge_documents/i });
+    const store = createStore(f.db, { dimensions: 3 });
+
+    await expect(store.markDeleted('s')).rejects.toThrow('DB boom');
+    expect(f.clientCalls.map((c) => c.sql.toUpperCase()).some((s) => s.includes('ROLLBACK'))).toBe(
+      true,
+    );
+    expect(f.release).toHaveBeenCalledTimes(1);
+  });
+});

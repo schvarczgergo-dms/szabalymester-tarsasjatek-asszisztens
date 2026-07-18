@@ -1,10 +1,10 @@
 ---
-baseline_commit: c67edbb
+baseline_commit: 5575686
 ---
 
 # Story 1.6: Inkrementális ingest-futás
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -22,26 +22,24 @@ so that csak a változott tartalom vektorizálódik újra, és a frissítés olc
 
 ## Tasks / Subtasks
 
-- [ ] **T1: Store bővítése a szinkronhoz** (AC: 1, 2) — UPDATE `src/rag/store.ts` (+ `store.spec.ts`)
-  - [ ] `listForSync() → { source, contentHash, status }[]` — a döntéshez kell a meglévő hash + státusz (a `list()` ezt nem adja). Paraméterezett SQL.
-  - [ ] `markDeleted(source)` — soft-delete: `UPDATE knowledge_documents SET status='deleted', chunk_count=0 WHERE source=$1` + a chunkok törlése (CASCADE-t nem vált ki az UPDATE, ezért explicit `DELETE FROM knowledge_chunks ... WHERE document_id=(SELECT id ...)` egy tranzakcióban). A dokumentum-sor MEGMARAD (audit).
-  - [ ] Tesztek: `listForSync`/`markDeleted` helyes paraméterezett SQL + `markDeleted` tranzakció-sorrend fake klienssel.
-- [ ] **T2: `src/ingest/ingest.spec.ts` — a szinkron-döntés tesztjei (TDD, RED)** (AC: 1, 2, 3, 5)
-  - [ ] `planSync(corpus, existing, { rebuild }) → { toUpsert, toDelete, toSkip }` PURE függvény tesztjei:
-  - [ ] egyező hash → `toSkip` (nincs embedding); eltérő hash → `toUpsert`; új source → `toUpsert`.
-  - [ ] a korpuszból eltűnt `active` dokumentum → `toDelete`; a visszatérő (korpuszban újra ott lévő) dokumentum → `toUpsert` (nem marad deleted).
-  - [ ] `rebuild: true` → minden jelen lévő dokumentum `toUpsert`, `toSkip` üres (a hash-t nem nézi).
-  - [ ] `runIngest` integrációs tesztje injektált fake-ekkel: a `toSkip` dokumentumokra NEM hív embeddert; a riport-számok stimmelnek; egy dokumentum parse-hibája nem állítja le a többit.
-- [ ] **T3: `src/ingest/ingest.ts` — orchestráció (GREEN)** (AC: 1, 2, 3, 4)
-  - [ ] `PIPELINE_VERSION` konstans (kommentben: változása `--rebuild`-et követel — spine-Deferred a tárolt oszlop).
-  - [ ] `planSync(...)` tiszta döntés (a fenti szignatúra); a hash-összevetés a `contentHash(parsed.body)` és az `existing` `content_hash` közt.
-  - [ ] `runIngest(deps, opts)`: beolvas → parse-ol (`parseDocument`) → chunkol (`chunkDocument`) → a `toUpsert` chunk-`content`-jeit **egyszer** batch-embeddeli (`embedTexts`) → `store.insert` (tranzakció, upsert+revival) → `toDelete`-re `store.markDeleted` → usage aggregálás → `IngestReport`.
-  - [ ] `deps` = injektált külvilág: `readCorpus` (fs `seed/rules/*.md`), `embed` (a `createOpenAIEmbedBatch`+`embedTexts` köré), `store`. A tiszta lépések (`parseDocument`, `chunkDocument`, `contentHash`) közvetlen import.
-  - [ ] Beszédes hiba-izoláció: egy dokumentum hibája a riportba kerül, a futás a többivel folytatódik (NFR-2 szellemében).
-- [ ] **T4: `pnpm ingest` belépőpont + `--rebuild`** (AC: 3) — UPDATE `package.json`
-  - [ ] `"ingest": "tsx src/ingest/ingest.ts"`; a `main()` `loadConfig()`-gal (fail-fast), a valós deps-szel, `process.argv`-ból a `--rebuild` flaggel; a végén a riportot kiírja.
-- [ ] **T5: Zöld-kapu** (AC: 5) — `pnpm test` (60 + újak) + `pnpm typecheck · lint · format:check` zöld.
-- [ ] **T6 (opcionális): Élő ingest-próba** — CSAK ha van `seed/rules` korpusz ÉS `OPENAI_API_KEY`. Egyébként dokumentáltan halasztva (a korpusz-seed külön feladat); a döntés-logikát a unit tesztek fedik.
+- [x] **T1: Store bővítése a szinkronhoz** (AC: 1, 2) — UPDATE `src/rag/store.ts` (+ `store.spec.ts`)
+  - [x] `listForSync() → { source, contentHash, status }[]` — a döntéshez a meglévő hash + státusz. Paraméterezett SQL.
+  - [x] `markDeleted(source)` — soft-delete egy tranzakcióban: chunkok törlése (`document_id = (SELECT id ...)`) + `UPDATE knowledge_documents SET status='deleted', chunk_count=0`. A dokumentum-sor MEGMARAD (audit).
+  - [x] Tesztek: `listForSync`/`markDeleted` paraméterezett SQL + `markDeleted` tranzakció-sorrend + ROLLBACK fake klienssel.
+- [x] **T2: `src/ingest/ingest.spec.ts` — a szinkron-döntés tesztjei (TDD, RED)** (AC: 1, 2, 3, 5)
+  - [x] `planSync` tesztek: egyező hash → skip; eltérő → upsert; új → upsert.
+  - [x] eltűnt `active` → delete; visszatérő (korábban `deleted`) → upsert (revival), nem skip.
+  - [x] `rebuild: true` → minden jelen lévő upsert, skip üres.
+  - [x] `runIngest` fake-ekkel: változatlan korpusz → 0 embedder-hívás; új+törölt riport-számok; parse-hiba izoláció.
+- [x] **T3: `src/ingest/ingest.ts` — orchestráció (GREEN)** (AC: 1, 2, 3, 4)
+  - [x] `PIPELINE_VERSION` konstans (változása `--rebuild`-et követel — spine-Deferred a tárolt oszlop).
+  - [x] `planSync(...)` tiszta döntés; a hash-összevetés a `contentHash(parsed.body)` és az `existing.content_hash` közt.
+  - [x] `runIngest(deps, opts)`: beolvas → `parseDocument` → `chunkDocument` → a `toUpsert` chunk-`content`-jei **egy** `embed`-hívásban → `store.insert` (tranzakció, upsert+revival) → `toDelete`-re `store.markDeleted` → usage aggregálás → `IngestReport`.
+  - [x] `deps` = injektált külvilág (`readCorpus`, `embed`, `store`); a tiszta lépések közvetlen import. Hiba-izoláció dokumentumonként.
+- [x] **T4: `pnpm ingest` belépőpont + `--rebuild`** (AC: 3) — UPDATE `package.json`
+  - [x] `"ingest": "tsx src/ingest/ingest.ts"`; `main()` `loadConfig()` + `checkEmbeddingDimensions` fail-fast, valós fs/OpenAI/pg deps, `--rebuild` a `process.argv`-ból, riport-log.
+- [x] **T5: Zöld-kapu** (AC: 5) — `pnpm test` (60 → 70) + `pnpm typecheck · lint · format:check` zöld.
+- [x] **T6 (opcionális): Élő ingest-próba** — HALASZTVA: nincs `seed/rules` korpusz és nincs `OPENAI_API_KEY` a környezetben (a korpusz-seed külön feladat). A döntés-logikát a `planSync`/`runIngest` unit tesztek fedik; a `main()` wiring kézzel futtatható, amint a korpusz + kulcs elérhető.
 
 ## Dev Notes
 
@@ -91,10 +89,31 @@ so that csak a változott tartalom vektorizálódik újra, és a frissítés olc
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból (Claude Code limit után folytatva).
+
 ### Debug Log References
+
+- RED: `pnpm test src/ingest/ingest.spec.ts` az implementáció előtt → import bukik ("no tests"); a store-bővítés 3 új tesztje piros.
+- GREEN: `store.spec.ts` 10→13, `ingest.spec.ts` 7/7; teljes csomag 60 → **70** teszt zöld.
+- Zöld-kapu: `pnpm typecheck` OK, `pnpm lint` OK, `pnpm format:check` OK (a módosult fájlok `pnpm format`-tal).
+- T6 (élő ingest) HALASZTVA: nincs `seed/rules` korpusz és `OPENAI_API_KEY`.
 
 ### Completion Notes List
 
+- `src/rag/store.ts` bővítve: `listForSync()` (source + content_hash + status a döntéshez) és `markDeleted(source)` (soft-delete egy tranzakcióban: chunk-törlés + `status='deleted'`, `chunk_count=0`; a dokumentum-sor audit-nyomként megmarad — AD-5).
+- `src/ingest/ingest.ts`: `planSync(corpus, existing, {rebuild})` tiszta döntés (skip/upsert/delete), `runIngest(deps, opts)` orchestráció — a `toSkip` NEM embeddelődik újra (0 hívás), a `toUpsert` chunkjai EGY batch-embeddingben, dokumentumonként tranzakciós `insert`, a `toDelete` `markDeleted`. Usage (token) aggregálva a riportba (AD-11). Hiba-izoláció dokumentumonként (NFR-2).
+- **Revival-döntés:** a korábban `deleted` (a chunkok fizikailag elvesztek) dokumentum visszatéréskor MINDIG újra-embeddelődik (nem skip), függetlenül a hash-egyezéstől — így a keresés újra teljes. Az `insert` `ON CONFLICT(source) DO UPDATE ... status='active'` automatikusan újraéleszti a sort.
+- **FR-5 / pipeline-verzió:** `--rebuild` a hash-független teljes újraépítés; `PIPELINE_VERSION` konstans, a tárolt oszlop + auto-detektálás spine-Deferred (nem épült sémaoszlop).
+- Scope tartva: nincs cron-scheduler kód (a cron a futtató környezet dolga; a `pnpm ingest` kézzel ÉS cronból is hívható); nincs HyDE/rerank/agent (Story 2.x).
+
 ### File List
 
+- `src/ingest/ingest.ts` (új)
+- `src/ingest/ingest.spec.ts` (új)
+- `src/rag/store.ts` (módosítva — `listForSync`, `markDeleted`, `SyncDocument`)
+- `src/rag/store.spec.ts` (módosítva — új tesztek)
+- `package.json` (módosítva — `ingest` script)
+
 ### Change Log
+
+- 2026-07-18: Story 1.6 implementálva — hash-alapú inkrementális ingest (`planSync`/`runIngest`), store `listForSync`/`markDeleted` (soft-delete audit + revival), `--rebuild`, usage-riport; TDD 10 új teszt (60→70). Status → review.
