@@ -1,10 +1,10 @@
 ---
-baseline_commit: 06e1290
+baseline_commit: ae62605
 ---
 
 # Story 3.2: Golden set és nyers-vs-teljes kiértékelés
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -22,14 +22,12 @@ so that bizonyítható a HyDE, a rerank és a grounding hozzáadott értéke.
 
 ## Tasks / Subtasks
 
-- [ ] **T1: `src/eval/golden-set.json`** (AC: 1) — 8 pozitív (a korpuszban lévő játékok, gold = jellemzően `jatekmenet`) + 2 negatív (Gloomhaven; abszurd/lefedetlen Catan-adat).
-- [ ] **T2: `src/eval/evaluate.ts` (+ `.spec.ts`) — tiszta kiértékelő** (AC: 3, 5)
-  - [ ] `goldInTopK(gold, hits, k)` → boolean; `detectReorder(rawHits, fullHits)` → boolean/leírás.
-  - [ ] Tesztek a kulcs-esetekre.
-- [ ] **T3: `src/eval/run-golden-set.ts`** (AC: 2, 4) — betölti a golden setet; kérdésenként `raw` (`embed`+`search`) és `full` (`retrieve`); markdown-táblázatot ír `docs/golden-set-eredmenyek.md`-be + összegzést a konzolra (metrikák).
-- [ ] **T4: `package.json` — `eval:golden-set` script.**
-- [ ] **T5: Zöld-kapu** — `pnpm test` + `typecheck · lint · format:check` zöld.
-- [ ] **T6: Éles futtatás** (Ollama) — `pnpm eval:golden-set`; az eredmények + elemzés a `docs/golden-set-eredmenyek.md`-be; a metrikák (≥7/8, ≥1 átrendezés, 2 negatív) kiértékelve, őszintén.
+- [x] **T1: `src/eval/golden-set.json`** — 8 pozitív + 2 negatív, gold-szakasszal.
+- [x] **T2: `src/eval/evaluate.ts` (+ `.spec.ts`)** — `goldInTopK`, `goldRank`, `reordered`; 5 unit teszt.
+- [x] **T3: `src/eval/run-golden-set.ts`** — nyers (`embed`+`search`) vs. teljes (`retrieve`) kérdésenként, metaadat-táblázat + HyDE `docs/golden-set-eredmenyek.md`-be, konzol-összegzés.
+- [x] **T4: `package.json` — `eval:golden-set` script.**
+- [x] **T5: Zöld-kapu** — `pnpm test` 179 pass +1 skip; `typecheck · lint · format:check` zöld.
+- [x] **T6: Éles futtatás (Ollama)** — 4/8 pozitív gold a top-5-ben, 7 átrendezés, 2/2 negatív absztenció. Elemzés: `docs/golden-set.md` §5 + `docs/golden-set-eredmenyek.md`.
 
 ## Dev Notes
 
@@ -59,10 +57,25 @@ so that bizonyítható a HyDE, a rerank és a grounding hozzáadott értéke.
 
 ### Agent Model Used
 
+Claude Opus 4.8 (`claude-opus-4-8`) — Cursorból.
+
 ### Debug Log References
+
+- Unit: `evaluate.spec.ts` 5 teszt; teljes csomag 179 pass + 1 skip.
+- Éles futás (Ollama, ~210s): 4/8 pozitív gold top-5, 7 átrendezés, 2/2 negatív absztenció.
+- **Gotcha (session):** a `run-golden-set.ts` egyszer üresen íródott ki (szerkesztő-glitch, mint korábban a `tool-outcome.ts`) → néma exit 0; újraírás után lefutott.
 
 ### Completion Notes List
 
+- `src/eval/golden-set.json`: 8 pozitív + 2 negatív, gold-szakasszal (a korpuszhoz igazítva; gold = `jatekmenet`).
+- `src/eval/evaluate.ts`: tiszta `goldInTopK`/`goldRank`/`reordered` (unit-tesztelt); `run-golden-set.ts`: nyers vs. teljes futtató, metaadat-alapú eredmény-doc + metrikák; `eval:golden-set` script.
+- **Mért eredmény (őszintén):** a negatív tesztek átmennek (küszöb → absztenció); a HyDE+rerank ott hoz gold top-1–2-t és feleződő távolságot, ahol a 3B HyDE értelmes; a 4/8 oka a 3B HyDE gyengesége (hallucináció / nyelv-keveredés), nem a pipeline. Erős modellel érdemben feljebb vihető. Elemzés: `docs/golden-set.md` §5.
+
 ### File List
 
+- `src/eval/golden-set.json`, `src/eval/evaluate.ts`, `src/eval/evaluate.spec.ts`, `src/eval/run-golden-set.ts` (új)
+- `package.json` (módosítva — `eval:golden-set`), `docs/golden-set.md` (§5 elemzés), `docs/golden-set-eredmenyek.md` (generált)
+
 ### Change Log
+
+- 2026-07-18: Story 3.2 implementálva — golden set (8+2) + nyers-vs-teljes futtató + tiszta kiértékelő (5 teszt), éles futás Ollamán, dokumentált elemzés (4/8 gold, 7 átrendezés, 2/2 negatív). Status → done.
