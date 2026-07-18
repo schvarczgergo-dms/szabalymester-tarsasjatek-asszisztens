@@ -1,46 +1,56 @@
 # Korpusz — `seed/rules/`
 
-A tudásbázis forrása: **hivatalos magyar szabálykönyvek** markdownná konvertált,
-front matterrel ellátott dokumentumai. Az `ingest` (`pnpm ingest`) ezt a mappát olvassa.
+A tudásbázis forrása: **jogtiszta, CC BY-SA 4.0 licencű** társasjáték-leírások, Markdownná
+alakítva, front matterrel. Az `ingest` (`pnpm ingest`) ezt a mappát olvassa.
 
-## ⚠️ A jelenlegi tartalom MINTA (placeholder)
+## Forrás és licenc
 
-A `seed/rules/` alatti fájlok **jelölten nem-hiteles, parafrazált minták**, kizárólag a
-pipeline (parse → chunk → embed → store → keresés) végponti kipróbálására (Story 1.7).
-Ismertetőjel: a `source` mező `sample.invalid` hosztra mutat.
+- **Angol nyelvű Wikipédia-cikkek** (a 8 tervezett játékhoz), a **szabály-releváns szakaszokra**
+  szűrve (áttekintés + játékmenet; az előkészület/pontozás jellemzően a játékmenet alá ágyazva).
+- Licenc: **CC BY-SA 4.0** — minden fájl elején attribúció (cikk címe + URL + „Wikipedia
+  contributors" + licenc). A hivatalos, jogvédett kiadói szabálykönyveket NEM használjuk.
+- A tartalom **nem hivatalos szabálykönyv**, hanem enciklopédikus, tényszerű leírás; a származékos
+  változatok (pl. módosítás, fordítás) is CC BY-SA 4.0 alatt maradnak.
 
-**Éles használat előtt cseréld le** őket a hivatalos magyar szabálykönyvekből (Gémklub /
-kiadói oldal / BoardGameGeek *Files*) konvertált, valós tartalomra, valós `source`-URL-lel.
-Kitalált szabály tilos — a válaszok hitelessége (grounding, AD-1) a korpusz hitelességén áll.
+## Nyelv
+
+A korpusz **angol**, a rendszer válasza **magyar** (kereszt-nyelvű RAG; az embedding-modell
+többnyelvű). A magyar Wikipédia e játékokhoz túl vékony/hiányos, ezért az angol a forrás.
 
 ## Konvenció (AD-10: egy fájl = egy `(game, section)`)
 
 - **Fájlnév:** `<jatek-slug>-<section>.md`, pl. `catan-jatekmenet.md`.
-- **Egy fájl = egy játék egy szakasza.** A `section` a fájlé (nem a `##`-é); a markdown
-  `##`/`###` alcímek csak a chunker breadcrumbjét adják.
-- **`source` egyedi és stabil** — ez a hash-alapú inkrementális frissítés kulcsa (Story 1.6).
+- **Egy fájl = egy játék egy szakasza.** A `section` a fájlé; a markdown `##`/`###` alcímek a
+  chunker breadcrumbját adják.
+- **`source` egyedi** — a Wikipédia-cikk URL-je + `#<section>` horgony (ez a hash-alapú
+  inkrementális frissítés kulcsa, Story 1.6).
 
 ### Kanonikus `section` értékek
 
 `attekintes` · `elokeszules` · `jatekmenet` · `pontozas` · `gyik`
 
-### Front matter-sablon
+### Front matter (példa)
 
 ```markdown
 ---
 title: Catan – Játékmenet
 game: Catan
-source: https://example.invalid/sample/catan-jatekmenet
+source: https://en.wikipedia.org/wiki/Catan#jatekmenet
 section: jatekmenet
+language: en
+license: CC-BY-SA-4.0
+license_url: https://creativecommons.org/licenses/by-sa/4.0/
+source_type: wikipedia
+retrieved: 2026-07-18
 ---
-
-## Egy szakasz alcíme
-
-A szabály szövege…
 ```
 
 ## Validálás
 
-A `src/ingest/corpus.spec.ts` minden `seed/rules/*.md`-t átfuttat a `parseDocument`-en
-(valid front matter, kanonikus `section`, nem üres törzs, egyedi `source`). Futtatás:
-`pnpm test`.
+A `src/ingest/corpus.spec.ts` minden `seed/rules/*.md`-t átfuttat a `parseDocument`-en (valid
+front matter, kanonikus `section`, nem üres törzs, egyedi `source`). Futtatás: `pnpm test`.
+
+## Frissítés / bővítés
+
+Új játék: vedd fel a CC BY-SA forrás szakaszait a fenti konvenció szerint, tartsd meg az
+attribúciót, és futtass `pnpm ingest`-et (a változatlan dokumentumok kimaradnak).
