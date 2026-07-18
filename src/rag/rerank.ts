@@ -53,7 +53,8 @@ export async function rerankChunks(
     const { object, usage } = await deps.generate({ question, candidates });
     const parsed = rerankSchema.safeParse(object);
     if (!parsed.success) {
-      return fallback();
+      // Érvénytelen kimenet: vektorsorrend-fallback, de a hívás usage-ét megőrizzük (AD-11).
+      return { ...fallback(), usage: { tokens: usage.tokens } };
     }
 
     const scoreByIndex = new Map<number, number>();

@@ -21,6 +21,8 @@ export interface RetrievalTrace {
   rerankFallback: boolean;
   contextChars: number;
   empty: boolean;
+  /** A retrieval modellhívásainak aggregált token-usage-e (HyDE + embedding + rerank) — AD-11. */
+  usage: { tokens: number };
 }
 
 export interface RetrievalResult {
@@ -69,6 +71,7 @@ export async function retrieve(
     rerankFallback: false,
     contextChars: 0,
     empty: false,
+    usage: { tokens: 0 },
   };
 
   // 1) HyDE (saját fallbackje van; a biztonság kedvéért itt is védve).
@@ -78,6 +81,7 @@ export async function retrieve(
     hydeText = hyde.text;
     trace.hydeText = hyde.text;
     trace.hydeFallback = hyde.usedFallback;
+    trace.usage.tokens += hyde.usage.tokens;
   } catch {
     trace.hydeFallback = true;
   }
@@ -87,6 +91,7 @@ export async function retrieve(
   try {
     const embedded = await deps.embed([hydeText]);
     vector = embedded.vectors[0];
+    trace.usage.tokens += embedded.usage.tokens;
   } catch {
     vector = undefined;
   }
@@ -123,6 +128,7 @@ export async function retrieve(
   }
   trace.rerankScores = reranked.ranked.map((item) => item.score);
   trace.rerankFallback = reranked.usedFallback;
+  trace.usage.tokens += reranked.usage.tokens;
 
   const topHits = reranked.ranked
     .map((item) => hits[item.index])

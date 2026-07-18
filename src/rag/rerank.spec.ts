@@ -53,6 +53,7 @@ describe('rerankChunks', () => {
     expect(result.usedFallback).toBe(true);
     expect(result.ranked.map((r) => r.index)).toEqual([0, 1, 2]);
     expect(result.ranked.every((r) => r.score === -1)).toBe(true);
+    expect(result.usage.tokens).toBe(7); // a hívás usage-e megőrizve a validációs fallbacken (AD-11)
   });
 
   it('hiba esetén → vektorsorrend-fallback, nem dob (AD-2)', async () => {
