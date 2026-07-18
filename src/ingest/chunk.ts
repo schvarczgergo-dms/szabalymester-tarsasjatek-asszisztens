@@ -26,6 +26,7 @@ interface DocSection {
 
 const HEADING_RE = /^(#{2,3})\s+(.*)$/;
 const LIST_LINE_RE = /^\s*([-*]|\d+\.)\s/;
+const BULLET_RE = /^\s*[-*]\s/;
 
 /** Üres sorok mentén blokkokra bont; egy blokk lista, ha MINDEN nem-üres sora lista-sor. */
 function blockify(lines: string[]): Block[] {
@@ -35,7 +36,12 @@ function blockify(lines: string[]): Block[] {
     const text = buffer.join('\n').trim();
     if (text !== '') {
       const nonEmpty = buffer.filter((line) => line.trim() !== '');
-      const isList = nonEmpty.length > 0 && nonEmpty.every((line) => LIST_LINE_RE.test(line));
+      // Lista, ha MINDEN nem-üres sora lista-sor ÉS (több soros VAGY felsorolásjeles) — így az
+      // egysoros, számmal+ponttal kezdődő próza ("2024. óta…") nem minősül tévesen listának.
+      const isList =
+        nonEmpty.length > 0 &&
+        nonEmpty.every((line) => LIST_LINE_RE.test(line)) &&
+        (nonEmpty.length >= 2 || BULLET_RE.test(nonEmpty[0] ?? ''));
       blocks.push({ text, isList });
     }
     buffer = [];
@@ -48,87 +54,116 @@ function blockify(lines: string[]): Block[] {
   return blocks;
 }
 
-/** A törzset a `##`/`###` alcímek mentén szakaszokra bontja, breadcrumb-bal. */
+/** A törzset a `##`/`###` alcímek mentén szakaszokra bontja, breadcrumb-bal. A H2/H3 külön
+ *  slot: a `###` a legutóbbi `##` alá fészkel; `##` nélküli testvér-`###`-ek nem ágyazódnak. */
 function splitIntoSections(body: string): DocSection[] {
   const sections: DocSection[] = [];
-  const stack: string[] = [];
-  let breadcrumb = '';
+  let h2 = '';
+  let h3 = '';
   let lines: string[] = [];
-  const push = (): void => {
+  const breadcrumb = (): string => [h2, h3].filter((s) => s !== '').join(' > ');
+  const push = (crumb: string): void => {
     const blocks = blockify(lines);
-    if (blocks.length > 0) sections.push({ breadcrumb, blocks });
+    if (blocks.length > 0) sections.push({ breadcrumb: crumb, blocks });
     lines = [];
   };
   for (const line of body.split('\n')) {
     const match = HEADING_RE.exec(line);
     if (match) {
-      push();
+      push(breadcrumb()); // az eddigi sorok a heading ELŐTTI breadcrumbhoz tartoznak
       const level = (match[1] ?? '').length;
       const title = (match[2] ?? '').trim();
       if (level === 2) {
-        stack.length = 0;
-        stack.push(title);
+        h2 = title;
+        h3 = '';
       } else {
-        if (stack.length >= 2) stack.length = 1;
-        stack.push(title);
+        h3 = title;
       }
-      breadcrumb = stack.join(' > ');
     } else {
       lines.push(line);
     }
   }
-  push();
+  push(breadcrumb());
   return sections;
 }
 
-/** Hosszú bekezdést mondathatáron (`.!?`) darabol, `max` alá csomagolva. */
-function splitSentences(text: string, max: number): string[] {
-  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) ?? [text];
+/** Utolsó mentsvár: szóhatáron `max` alá tördel (ha egy mondat maga hosszabb `max`-nál). */
+function hardSplit(text: string, max: number): string[] {
+  if (text.length <= max) return [text];
   const pieces: string[] = [];
   let buffer = '';
-  for (const raw of sentences) {
-    const sentence = raw.trim();
-    if (buffer !== '' && buffer.length + 1 + sentence.length > max) {
+  for (const word of text.split(/\s+/)) {
+    if (word === '') continue;
+    if (buffer !== '' && buffer.length + 1 + word.length > max) {
       pieces.push(buffer);
+      buffer = word;
+    } else {
+      buffer = buffer === '' ? word : `${buffer} ${word}`;
+    }
+  }
+  if (buffer !== '') pieces.push(buffer);
+  return pieces.length > 0 ? pieces : [text];
+}
+
+/** Hosszú bekezdést mondathatáron (`.!?`) darabol, `max` alá csomagolva — tartalomvesztés
+ *  nélkül (a `split` mindent megtart), és garantáltan `<= max` (szóhatár-fallback). */
+function splitSentences(text: string, max: number): string[] {
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  const packed: string[] = [];
+  let buffer = '';
+  for (const sentence of sentences) {
+    if (sentence === '') continue;
+    if (buffer !== '' && buffer.length + 1 + sentence.length > max) {
+      packed.push(buffer);
       buffer = sentence;
     } else {
       buffer = buffer === '' ? sentence : `${buffer} ${sentence}`;
     }
   }
-  if (buffer !== '') pieces.push(buffer);
-  return pieces;
+  if (buffer !== '') packed.push(buffer);
+  return packed.flatMap((piece) => hardSplit(piece, max));
 }
 
-/** Egy szakasz blokkjait chunk-szövegekké csomagolja (lista atomi; átfedés az utolsó bekezdéssel). */
+/** Egy szakasz blokkjait chunk-szövegekké csomagolja: lista atomi; hosszú bekezdés mondathatáron;
+ *  szakaszon belüli átfedés az utolsó bekezdéssel — de a chunk sosem lépi túl `max`-ot. */
 function packBlocks(blocks: Block[], target: number, max: number): string[] {
   const out: string[] = [];
   let current: Block[] = [];
-  const len = (): number =>
-    current.reduce((n, b) => n + b.text.length, 0) + (current.length - 1) * 2;
-
-  const emit = (overlap: boolean): void => {
-    if (current.length === 0) return;
-    out.push(current.map((b) => b.text).join('\n\n'));
-    const lastParagraph = [...current].reverse().find((b) => !b.isList);
-    current = overlap && lastParagraph ? [lastParagraph] : [];
+  const currentLen = (): number =>
+    current.reduce((n, b) => n + b.text.length, 0) + Math.max(0, current.length - 1) * 2;
+  const flush = (): void => {
+    if (current.length > 0) out.push(current.map((b) => b.text).join('\n\n'));
   };
+  const lastParagraph = (): Block | undefined => [...current].reverse().find((b) => !b.isList);
 
   for (const block of blocks) {
     if (block.isList) {
-      if (current.length > 0) emit(false); // a lista előtt lezárjuk a folyót (átfedés nélkül)
+      flush();
       out.push(block.text); // a lista saját, atomi chunk (akár max felett)
       current = [];
       continue;
     }
     if (block.text.length > max) {
-      if (current.length > 0) emit(false);
+      flush();
+      current = [];
       for (const piece of splitSentences(block.text, max)) out.push(piece);
       continue;
     }
-    if (current.length > 0 && len() + 2 + block.text.length > target) emit(true);
-    current.push(block);
+    if (current.length === 0) {
+      current = [block];
+      continue;
+    }
+    if (currentLen() + 2 + block.text.length <= target) {
+      current.push(block);
+      continue;
+    }
+    // Új chunk kell: az átfedő bekezdést CSAK akkor visszük át, ha a párja belefér `max`-ba.
+    const overlap = lastParagraph();
+    flush();
+    current =
+      overlap && overlap.text.length + 2 + block.text.length <= max ? [overlap, block] : [block];
   }
-  emit(false);
+  flush();
   return out;
 }
 
