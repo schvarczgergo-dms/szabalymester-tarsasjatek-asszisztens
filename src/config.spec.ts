@@ -55,4 +55,29 @@ describe('loadConfig', () => {
   it('nem pozitív pipeline-paramétert elutasít', () => {
     expect(() => loadConfig({ ...validEnv, KEEP_TOP: '0' })).toThrowError(ConfigError);
   });
+
+  it('a csak-whitespace kötelező titkot elutasítja', () => {
+    expect(() => loadConfig({ ...validEnv, OPENAI_API_KEY: '   ' })).toThrowError(ConfigError);
+  });
+
+  it('a titkot trimmeli', () => {
+    const config = loadConfig({ ...validEnv, ANTHROPIC_API_KEY: '  sk-ant-x  ' });
+    expect(config.anthropicApiKey).toBe('sk-ant-x');
+  });
+
+  it('az üres opcionális modellnév a defaultra esik vissza', () => {
+    const config = loadConfig({ ...validEnv, EMBEDDING_MODEL: '', ANSWER_MODEL: '   ' });
+    expect(config.embeddingModel).toBe('text-embedding-3-small');
+    expect(config.answerModel).toBe('claude-sonnet-5');
+  });
+
+  it('az üres/whitespace numerikus paraméter a defaultra esik vissza', () => {
+    const config = loadConfig({ ...validEnv, WIDE_NET: '', KEEP_TOP: '  ' });
+    expect(config.wideNet).toBe(20);
+    expect(config.keepTop).toBe(5);
+  });
+
+  it('a numerikus hiba az ENV-változó nevét nevezi meg', () => {
+    expect(() => loadConfig({ ...validEnv, WIDE_NET: 'nem-szam' })).toThrowError(/WIDE_NET/);
+  });
 });
