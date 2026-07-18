@@ -15,9 +15,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "docker compose up -d",
+    "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:schema": "docker compose exec -T db psql -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"
+    "db:schema": "docker compose exec -T db psql -v ON_ERROR_STOP=1 -U szabalymester -d szabalymester -f /docker-entrypoint-initdb.d/schema.sql"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

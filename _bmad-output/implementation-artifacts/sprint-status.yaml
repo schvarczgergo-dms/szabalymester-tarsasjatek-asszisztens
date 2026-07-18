@@ -50,7 +50,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-1: in-progress
   1-1-projektvaz-es-konfiguracio: done
-  1-2-tudasbazis-sema: review
+  1-2-tudasbazis-sema: done
   1-3-dokumentum-parse: backlog
   1-4-determinisztikus-chunkolas: backlog
   1-5-embedding-es-tarolas: backlog

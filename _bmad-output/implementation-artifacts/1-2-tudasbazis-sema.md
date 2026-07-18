@@ -4,7 +4,7 @@ baseline_commit: c921eaf
 
 # Story 1.2: Tudásbázis-séma
 
-Status: review
+Status: done
 
 ## Story
 
@@ -38,6 +38,16 @@ so that a dokumentumok és a chunkjaik konzisztensen, kereshetően tárolhatók.
   - [x] Idempotencia: `pnpm db:schema` másodszor → csak NOTICE, nincs hiba.
   - [x] CASCADE: tranzakcióban insert dokumentum + chunk (`array_fill(0.1, ARRAY[1536])::vector`), majd dokumentum-törlés → chunk-szám 1→0; ROLLBACK.
   - [x] CHECK: rossz `section` és rossz `status` insert elutasítva.
+
+### Review Findings
+
+- [x] [Review][Patch] `db:up` várjon healthy-ig (`docker compose up -d --wait`) — különben a `db:schema` a még nem kész DB-hez próbál csatlakozni. Forrás: blind. [package.json]
+- [x] [Review][Patch] `db:schema` fail-fast SQL-hibára: `psql -v ON_ERROR_STOP=1` — most a psql egy köztes hiba után is folytat, és a script „sikeresnek" tűnhet. Forrás: edge. [package.json]
+- [x] [Review][Patch] DB-port loopback-re kötése: `127.0.0.1:${POSTGRES_PORT:-5432}:5432` — dev-hardening (a default gyenge jelszó exponáltságát mérsékli). Forrás: blind. [docker-compose.yml]
+- [x] [Review][Defer] `db:schema` paraméterezett `-U/-d` (POSTGRES_USER/DB override) [package.json] — deferred: a `sh -c '...$POSTGRES_USER...'` forma a pnpm/Windows shellen elhasal; cross-platform apply-script jövőbeli munka.
+- [x] [Review][Defer] Séma-migrációs stratégia (`IF NOT EXISTS` nem kezel séma-evolúciót/ALTER-t) — deferred: verziózott migráció, ha a séma bővül.
+- [x] [Review][Defer] `vector(1536)` ↔ `EMBEDDING_DIMENSIONS` egyeztetés/fail-fast — deferred: **Story 1.5** (embed) hatóköre (AD-3), a Dev Notes már jelzi.
+- [x] [Review][Defer] `chunk_count` szinkronban tartása a tényleges chunk-számmal — deferred: **Story 1.6** (ingest) tartja karban.
 
 ## Dev Notes
 
@@ -98,3 +108,4 @@ Claude Opus 4.8 (`claude-opus-4-8`)
 ### Change Log
 
 - 2026-07-18: Story 1.2 implementálva — pgvector-séma (2 tábla, CASCADE, CHECK), idempotens, élő DB-n verifikálva. Status → review.
+- 2026-07-18: Code review — 3 patch (db:up --wait, db:schema ON_ERROR_STOP=1, port loopback), élő DB-n igazolva, regresszió 13/13. 4 defer (2 jövő, 2 Story 1.5/1.6). Status → done.
