@@ -49,6 +49,13 @@ export interface DocumentSummary {
   status: string;
 }
 
+/** A szinkron-döntéshez szükséges minimum: a source, a tárolt hash és a státusz. */
+export interface SyncDocument {
+  source: string;
+  contentHash: string;
+  status: string;
+}
+
 type Row = Record<string, unknown>;
 type QueryResult = { rows: Row[] };
 
@@ -76,6 +83,10 @@ export interface Store {
   ): Promise<{ documentId: number; chunkCount: number }>;
   search(embedding: number[], topK: number): Promise<SearchHit[]>;
   list(): Promise<DocumentSummary[]>;
+  /** A szinkron-döntéshez: minden dokumentum source + content_hash + status. */
+  listForSync(): Promise<SyncDocument[]>;
+  /** Soft-delete (audit): a chunkokat törli, a dokumentum-sort `status='deleted'`-re állítja (megtartja). */
+  markDeleted(source: string): Promise<void>;
   delete(source: string): Promise<void>;
 }
 
@@ -120,6 +131,18 @@ const LIST_SQL = `
 `;
 
 const DELETE_SQL = `DELETE FROM knowledge_documents WHERE source = $1`;
+
+const LIST_FOR_SYNC_SQL = `SELECT source, content_hash, status FROM knowledge_documents`;
+
+const MARK_DELETED_CHUNKS_SQL = `
+  DELETE FROM knowledge_chunks
+  WHERE document_id = (SELECT id FROM knowledge_documents WHERE source = $1)
+`;
+
+const MARK_DELETED_DOC_SQL = `
+  UPDATE knowledge_documents SET status = 'deleted', chunk_count = 0, indexed_at = now()
+  WHERE source = $1
+`;
 
 function assertDimensions(chunks: ChunkInput[], dimensions: number): void {
   for (const chunk of chunks) {
@@ -212,6 +235,30 @@ export function createStore(db: Db, options: StoreOptions): Store {
         chunkCount: Number(row.chunk_count),
         status: String(row.status ?? ''),
       }));
+    },
+
+    async listForSync() {
+      const result = await db.query(LIST_FOR_SYNC_SQL);
+      return result.rows.map((row) => ({
+        source: String(row.source ?? ''),
+        contentHash: String(row.content_hash ?? ''),
+        status: String(row.status ?? ''),
+      }));
+    },
+
+    async markDeleted(source) {
+      const client = await db.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query(MARK_DELETED_CHUNKS_SQL, [source]);
+        await client.query(MARK_DELETED_DOC_SQL, [source]);
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
     },
 
     async delete(source) {
