@@ -7,7 +7,7 @@
 
 ## A projekt egy mondatban
 
-Működő RAG-pipeline társasjáték-szabályokra: ~22 játék **jogtiszta, CC BY-SA 4.0** forrásból
+Működő RAG-pipeline társasjáték-szabályokra: 28 játék **jogtiszta, CC BY-SA 4.0** forrásból
 (angol Wikipédia/Wikibooks, 54 dokumentum) a tudásbázisban, saját chunking-stratégia
 (szakasz-alapú, játéknév-fejléc), teljes keresési pipeline (HyDE + rerank), grounding
 forráshivatkozással, multi-provider routing, kereszt-nyelvű RAG (angol korpusz → magyar válasz)
@@ -42,7 +42,7 @@ forráshivatkozással, multi-provider routing, kereszt-nyelvű RAG (angol korpus
 
 ## Tudásbázis (korpusz)
 
-~22 népszerű társasjáték leírása **jogtiszta, CC BY-SA 4.0 forrásból** (angol Wikipédia +
+28 népszerű társasjáték leírása **jogtiszta, CC BY-SA 4.0 forrásból** (angol Wikipédia +
 néhány Wikibooks), a szabály-releváns szakaszokra szűrve → **54 dokumentum, ~17 600 szó**,
 minden fájlban attribúcióval. A `source` a cikk-URL + szakasz-horgony. A hivatalos, jogvédett
 kiadói szabálykönyveket NEM használjuk. Részletek: `seed/README.md`. A korpusz angol, a válasz

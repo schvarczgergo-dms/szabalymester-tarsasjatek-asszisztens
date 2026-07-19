@@ -5,7 +5,7 @@ alakítva, front matterrel. Az `ingest` (`pnpm ingest`) ezt a mappát olvassa.
 
 ## Forrás és licenc
 
-- **Angol nyelvű Wikipédia-cikkek** (~22 népszerű társasjáték, a golden-set 8 magjával + további
+- **Angol nyelvű Wikipédia-cikkek** (28 népszerű társasjáték, a golden-set 8 magjával + további
   címek a korpusz-mélységhez) és néhány **Wikibooks** klasszikus-játék szabály — a **szabály-releváns
   szakaszokra** szűrve (áttekintés + játékmenet; az előkészület/pontozás gyakran a játékmenet alá ágyazva).
 - Licenc: **CC BY-SA 4.0** — minden fájl elején attribúció (cikk címe + URL + „Wikipedia/Wikibooks
