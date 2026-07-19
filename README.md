@@ -33,6 +33,7 @@ routing — plusz külön architektúra-spec a tudásbázis karbantartásáról.
 | [`docs/golden-set.md`](docs/golden-set.md) | 10 tesztkérdés (2 negatív) + módszertan + elfogadási kritériumok | golden set + negatív teszt |
 | [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md) | a tudásbázis inkrementális karbantartásának terve (hash-alapú változásérzékelés, errata, törlés, triggerek) + adatfolyam-ábra | architektúra-spec |
 | [`docs/koltsegbecsles.md`](docs/koltsegbecsles.md) | költség-módszertan + előzetes kalkuláció (a mért számok ide, a README-be kerülnek) | költségbecslés |
+| [`docs/ROI.md`](docs/ROI.md) | üzleti ROI: emberi munkaerő vs. RAG-asszisztens (felhő/lokális) összevetés, megtérülés, hibrid modell | ROI-elemzés |
 | [`docs/tervezesi-mintak.md`](docs/tervezesi-mintak.md) | a RAG-pipeline repo-független tervezési mintái (a megvalósításhoz) | — (háttér) |
 | [`docs/szabalyok.md`](docs/szabalyok.md) | kód- és projektkonvenciók (a Dev-ügynök ezekre hivatkozik) | — (háttér) |
 | [`docs/bmad-workflow.md`](docs/bmad-workflow.md) | a megvalósítás menete BMAD-dal: szereposztás + 12 story | — (folyamat) |
