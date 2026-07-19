@@ -40,7 +40,7 @@ nagy címhez ad hivatalos magyar szabálykönyv-PDF-et; a válaszok is magyarul 
 > **jogtiszta, CC BY-SA 4.0** forrásból készült (angol Wikipédia + némi Wikibooks). Az alábbi
 > eredeti terv-leírást ez váltja fel; a részletek: `seed/README.md`.
 
-- **~22 népszerű társasjáték** (a 8 golden-set mag: Catan, Carcassonne, Ticket to Ride, Pandemic,
+- **28 népszerű társasjáték** (a 8 golden-set mag: Catan, Carcassonne, Ticket to Ride, Pandemic,
   7 Wonders, Azul, Splendor, King of Tokyo + további címek a korpusz-mélységhez). **Gloomhaven
   szándékosan kimarad** (a negatív teszt „nincs a korpuszban" próbája).
 - A szabály-releváns szakaszokra szűrve (áttekintés + játékmenet; az előkészület/pontozás gyakran

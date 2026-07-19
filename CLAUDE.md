@@ -13,7 +13,7 @@ A pipeline **kész és fut** (Epic 1–3 mind `done`; ld. `_bmad-output/implemen
 Néhány terv-eltérés, amit a végleges állapot tükröz:
 
 - **Korpusz:** a hivatalos, jogvédett magyar szabálykönyvek helyett **jogtiszta, CC BY-SA 4.0**
-  forrás (angol Wikipédia + némi Wikibooks), attribúcióval — ~22 játék, **54 dokumentum, ~17 600 szó**
+  forrás (angol Wikipédia + némi Wikibooks), attribúcióval — 28 játék, **54 dokumentum, ~17 600 szó**
   (`seed/rules/`, `seed/README.md`). A korpusz **angol**, a válasz **magyar** (kereszt-nyelvű RAG;
   a HyDE a korpusz nyelvén generál — `CORPUS_LANGUAGE`).
 - **Lokális, ingyenes mód:** a modellek futtathatók helyi **Ollamán** (provider base-URL override

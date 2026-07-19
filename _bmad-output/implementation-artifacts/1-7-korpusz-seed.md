@@ -7,7 +7,7 @@ baseline_commit: 7c4ea3f
 Status: done
 
 > **Lezárás (2026-07-18):** a korpusz a jogtiszta **CC BY-SA 4.0** (angol Wikipédia + Wikibooks)
-> megközelítéssel készült el — ~22 játék, **54 dokumentum, ~17 600 szó**, attribúcióval; ez
+> megközelítéssel készült el — 28 játék, **54 dokumentum, ~17 600 szó**, attribúcióval; ez
 > felváltotta a korábbi jelölt minta/placeholder tartalmat (a hivatalos kiadói szabálykönyvek
 > jogi kockázata miatt). Élesben ingestelve (Ollama). Részletek: `seed/README.md`,
 > `docs/golden-set.md` §5. A HF3 korpusz-követelménye (20–30 dok, ~15 000 szó) teljesül.
