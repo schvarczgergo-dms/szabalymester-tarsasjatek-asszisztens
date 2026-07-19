@@ -7,10 +7,11 @@
 
 ## A projekt egy mondatban
 
-Működő RAG-pipeline társasjáték-szabályokra: 7-8 népszerű játék hivatalos magyar
-szabálykönyve a tudásbázisban, saját chunking-stratégia (szakasz-alapú, játéknév-fejléc),
-teljes keresési pipeline (HyDE + rerank), grounding forráshivatkozással, multi-provider
-routing — plusz külön architektúra-spec a tudásbázis karbantartásáról.
+Működő RAG-pipeline társasjáték-szabályokra: ~22 játék **jogtiszta, CC BY-SA 4.0** forrásból
+(angol Wikipédia/Wikibooks, 54 dokumentum) a tudásbázisban, saját chunking-stratégia
+(szakasz-alapú, játéknév-fejléc), teljes keresési pipeline (HyDE + rerank), grounding
+forráshivatkozással, multi-provider routing, kereszt-nyelvű RAG (angol korpusz → magyar válasz)
+— plusz külön architektúra-spec a tudásbázis karbantartásáról.
 
 ## Miért ez a domain?
 
