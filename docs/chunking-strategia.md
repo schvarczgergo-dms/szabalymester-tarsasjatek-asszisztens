@@ -5,19 +5,20 @@
 
 ## 1. Mit tudunk a korpuszról? (ebből következik minden döntés)
 
-A tudásbázis: 7-8 népszerű társasjáték hivatalos **magyar szabálykönyve**, markdownba
-konvertálva, játékonként több tagolt dokumentumban. A tagoltság jellemzői —
-ezekre épül a stratégia:
+A tudásbázis: 28 népszerű társasjáték leírása **jogtiszta, CC BY-SA 4.0 forrásból**
+(angol Wikipédia + némi Wikibooks), markdownba konvertálva, játékonként több tagolt
+dokumentumban (**54 dokumentum, ~17 600 szó**). A korpusz **angol**, a válasz magyar
+(kereszt-nyelvű RAG). A tagoltság jellemzői — ezekre épül a stratégia:
 
 1. **Front matter** minden fájlon: `title`, `game` (melyik játék!), `source` (URL),
    `section` (attekintes / elokeszules / jatekmenet / pontozas / gyik).
-2. **Szabványos, konzisztens szakasz-struktúra**: a szabálykönyvek jellemző szakaszai
-   (Komponensek, Előkészület, A játék menete, Egy kör lépései, Pontozás, Játék vége,
-   Gyakori kérdések) — a kiadó már elvégezte a szemantikus tagolást alcímekkel.
+2. **Szabványos, konzisztens szakasz-struktúra**: a leírások jellemző szakaszai
+   (Components, Setup, Gameplay, Turn structure, Scoring, End of game, FAQ) — a forrás
+   már elvégezte a szemantikus tagolást alcímekkel.
 3. **Vegyes bekezdés-méret**: rövid szabály-mondatok és hosszabb, példával illusztrált
    szakaszok váltakoznak; gyakran **listák** (lépéssorozatok, felsorolt komponensek).
-4. **Erős anafora**: a szabályok a játékot alanyként kezelik — "Húzz 2 lapot",
-   "Dobj a kockával", "Ekkor a játékos passzol". A **játék neve** szinte sehol nem
+4. **Erős anafora**: a szabályok a játékot alanyként kezelik — "Draw 2 cards",
+   "Roll the dice", "The player then passes". A **játék neve** szinte sehol nem
    szerepel a mondatban, csak a dokumentum tetején → chunkból kiszakítva elveszik.
 5. **Kevés zaj**, de van: borító, kiadói impresszum, komponens-illusztrációk aláírásai,
    "©"/jogi sor — ezeket ingest előtt szűrjük.
@@ -49,11 +50,11 @@ Minden chunk szövege elé egy rövid fejléc kerül embeddelés ELŐTT:
 <a szakasz szövege...>
 ```
 
-Példa: `Catan (A telepesek) > Építkezés > Város építése` + a szabály szövege.
+Példa (a korpusz angol): `Catan > Gameplay > Resource production` + a szabály szövege.
 
 Indoklás — ez a domain legerősebb chunking-érve: a szabály-szöveg **anaforikus**.
-A "Dobj a két kockával, és minden azt a számot mutató mező termel." chunk a játék neve
-nélkül BÁRMELYIK kockás játék öntözés-analóg szakaszához hasonlít vektorban. A "Catanban
+A "Roll the two dice; every hex showing that number produces resources." chunk a játék neve
+nélkül BÁRMELYIK kockás játék erőforrás-analóg szakaszához hasonlít vektorban. A "Catanban
 hogyan termelnek a mezők?" kérdésre a fejléc nélküli chunk vektora alig különbözik a
 King of Tokyo kocka-szakaszától. A fejléccel a **játék neve minden chunk vektorába
 bekerül** — így a keresés játékot is meg tud különböztetni, nem csak témát.
