@@ -35,6 +35,10 @@ forráshivatkozással, multi-provider routing, kereszt-nyelvű RAG (angol korpus
 | [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md) | a tudásbázis inkrementális karbantartásának terve (hash-alapú változásérzékelés, errata, törlés, triggerek) + adatfolyam-ábra | architektúra-spec |
 | [`docs/koltsegbecsles.md`](docs/koltsegbecsles.md) | költség-módszertan + előzetes kalkuláció (a mért számok ide, a README-be kerülnek) | költségbecslés |
 | [`docs/ROI.md`](docs/ROI.md) | üzleti ROI: emberi munkaerő vs. RAG-asszisztens (felhő/lokális) összevetés, megtérülés, hibrid modell | ROI-elemzés |
+| [`docs/ugyfel-poc/README.md`](docs/ugyfel-poc/README.md) | vendégirányú PoC: mit csinál, hogyan indul, demo | ügyfél-bejárat |
+| [`docs/ugyfel-poc/prezentacio.html`](docs/ugyfel-poc/prezentacio.html) | 7 dia a vezetői körnek (adattérkép, rollout, mérés) | business case |
+| [`docs/ugyfel-poc/meresi-terv.md`](docs/ugyfel-poc/meresi-terv.md) | metrikák, adatforrás, riport, gazda | mérési terv |
+| [`docs/ugyfel-poc/kerdeslap.md`](docs/ugyfel-poc/kerdeslap.md) | kötekedő kérdések a PoC-ra mutatva | döntéselőkészítés |
 | [`docs/tervezesi-mintak.md`](docs/tervezesi-mintak.md) | a RAG-pipeline repo-független tervezési mintái (a megvalósításhoz) | — (háttér) |
 | [`docs/szabalyok.md`](docs/szabalyok.md) | kód- és projektkonvenciók (a Dev-ügynök ezekre hivatkozik) | — (háttér) |
 | [`docs/bmad-workflow.md`](docs/bmad-workflow.md) | a megvalósítás menete BMAD-dal: szereposztás + 12 story | — (folyamat) |
@@ -79,8 +83,11 @@ pnpm cli ask "Catanban mi történik, ha 7-est dobok?"
 pnpm debug:sources               # mi van a tudásbázisban
 pnpm debug:search "..." --full   # nyers vs. teljes retrieval (trace-szel)
 pnpm eval:golden-set             # golden set: nyers vs. teljes + negatív teszt → docs/golden-set-eredmenyek.md
+pnpm poc                         # vendégfelület + játékmester kapu (http://127.0.0.1:3847/)
 pnpm test                        # unit tesztek
 ```
+
+**Vendégirányú PoC:** a meglévő agent új bejárata a Gémasztal vendégeinek — élő szabályválasz vagy emberi eszkaláció. Indítás, demo, adattérkép és mérési terv: [`docs/ugyfel-poc/README.md`](docs/ugyfel-poc/README.md).
 
 **Lokális (ingyenes) mód:** Ollama + a `.env` base-URL override — a teljes lánc fizetős API
 nélkül fut. Lépésről lépésre: [`docs/local-mode.md`](docs/local-mode.md).
