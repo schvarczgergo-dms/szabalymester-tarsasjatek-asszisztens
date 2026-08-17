@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gémasztal · Szabálysegéd</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand-row">
+          <div class="mark" aria-hidden="true"></div>
+          <p class="brand">Gémasztal</p>
+        </div>
+        <h1>Szabálysegéd</h1>
+        <p class="lede">
+          Vendégkérdés a játékasztal mellől — éjjel is. A válasz a tudásbázisból készül,
+          forrással; ha a rendszer bizonytalan, a játékmester veszi át.
+        </p>
+      </header>
+
+      <div class="banner">
+        AI-asszisztenssel beszélsz (Szabálymester). A magyarázat nem hivatalos bírói döntés —
+        a játékasztalnál ti döntötök.
+      </div>
+
+      <section class="card">
+        <label for="question">Szabálykérdés</label>
+        <textarea id="question" placeholder="Pl. Catanban mi történik, ha 7-est dobok?"></textarea>
+        <div class="hints">
+          <button type="button" class="ghost" data-fill="Catanban mi történik, ha 7-est dobok?">
+            Demo: Catan, 7-es
+          </button>
+          <button type="button" class="ghost" data-fill="Hogyan kell játszani a Gloomhavennel?">
+            Demo: Gloomhaven (eszkaláció)
+          </button>
+        </div>
+        <div class="row">
+          <button type="button" id="ask">Kérdezek</button>
+        </div>
+      </section>
+
+      <section class="card" id="result" hidden>
+        <span class="status" id="path"></span>
+        <p class="answer" id="message"></p>
+        <ul class="sources" id="sources"></ul>
+        <p class="meta" id="meta"></p>
+        <div class="row" id="feedback-row" hidden>
+          <button type="button" class="danger" id="flag-wrong">Hibás volt a válasz</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <label for="lookup">Már van azonosítód?</label>
+        <div class="row">
+          <input id="lookup" placeholder="kérés-azonosító" />
+          <button type="button" class="secondary" id="check">Megnézem</button>
+        </div>
+      </section>
+    </div>
+    <script src="/customer.js"></script>
+  </body>
+</html>

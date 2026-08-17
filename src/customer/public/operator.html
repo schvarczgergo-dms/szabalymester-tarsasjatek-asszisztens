@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Játékmester kapu · Szabálymester</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="operator">
+    <div class="wrap wide">
+      <header>
+        <div class="brand-row">
+          <div class="mark" aria-hidden="true"></div>
+          <p class="brand">Szabálymester · emberi kapu</p>
+        </div>
+        <h1>Játékmester asztal</h1>
+        <p class="lede">
+          Itt landol a vendégkérdés, ha a keresés üres vagy hibás, vagy a modell nem válaszol.
+          Jóváhagyás előtt látod a kérdést, az okot és az agent vázlatát. Elutasítás után a
+          vendég nem kap auto-választ.
+        </p>
+        <nav class="switch"><a href="/">← Vendégfelület</a></nav>
+      </header>
+
+      <div class="split">
+        <section class="card">
+          <h2>Várakozó jegyek</h2>
+          <div id="list">Nincs pending jegy.</div>
+          <p class="meta" id="metrics"></p>
+          <div class="row">
+            <button type="button" class="secondary" id="reload">Frissítés</button>
+          </div>
+        </section>
+
+        <section class="card" id="detail">
+          <p class="lede">Válassz egy jegyet a listából.</p>
+        </section>
+      </div>
+    </div>
+    <script src="/operator.js"></script>
+  </body>
+</html>
