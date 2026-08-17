@@ -62,6 +62,16 @@ describe('loadConfig', () => {
     expect(loadConfig(validEnv).openaiBaseUrl).toBeUndefined();
   });
 
+  it('az embedding base-URL külön megadható (helyi nomic + Ollama Cloud chat)', () => {
+    const config = loadConfig({
+      ...validEnv,
+      OPENAI_BASE_URL: 'https://ollama.com/v1',
+      EMBEDDING_BASE_URL: 'http://localhost:11434/v1',
+    });
+    expect(config.openaiBaseUrl).toBe('https://ollama.com/v1');
+    expect(config.embeddingBaseUrl).toBe('http://localhost:11434/v1');
+  });
+
   it('a numerikus paramétereket stringből számmá konvertálja', () => {
     const config = loadConfig({ ...validEnv, WIDE_NET: '30', KEEP_TOP: '7' });
     expect(config.wideNet).toBe(30);

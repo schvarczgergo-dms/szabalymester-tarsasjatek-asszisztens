@@ -65,6 +65,7 @@ const KEY_TO_ENV: Record<string, string> = {
   anthropicApiKey: 'ANTHROPIC_API_KEY',
   databaseUrl: 'DATABASE_URL',
   openaiBaseUrl: 'OPENAI_BASE_URL',
+  embeddingBaseUrl: 'EMBEDDING_BASE_URL',
   anthropicBaseUrl: 'ANTHROPIC_BASE_URL',
   corpusLanguage: 'CORPUS_LANGUAGE',
   embeddingModel: 'EMBEDDING_MODEL',
@@ -90,6 +91,9 @@ const configSchema = z.object({
   // Provider base-URL override — üresen az igazi OpenAI/Anthropic; kitöltve a helyi
   // Ollama (OpenAI-kompatibilis) ill. a LiteLLM proxy (Anthropic-kompatibilis) végpont.
   openaiBaseUrl: optionalUrl(),
+  // Ollama Cloudnál a chat mehet ollama.com-ra, az embedding maradhat a helyi nomic-on
+  // (ugyanaz a 768d tér — nincs ingest --rebuild). Üresen = OPENAI_BASE_URL.
+  embeddingBaseUrl: optionalUrl(),
   anthropicBaseUrl: optionalUrl(),
 
   // A korpusz nyelve — a HyDE EZEN a nyelven generál (nyelvi rés elkerülése). Lokálisan `en`
@@ -134,6 +138,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     anthropicApiKey: env.ANTHROPIC_API_KEY,
     databaseUrl: env.DATABASE_URL,
     openaiBaseUrl: env.OPENAI_BASE_URL,
+    embeddingBaseUrl: env.EMBEDDING_BASE_URL,
     anthropicBaseUrl: env.ANTHROPIC_BASE_URL,
     corpusLanguage: env.CORPUS_LANGUAGE,
     embeddingModel: env.EMBEDDING_MODEL,

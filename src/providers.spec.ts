@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from './config';
-import { anthropicOptions, openAIOptions } from './providers';
+import { anthropicOptions, embeddingOptions, openAIOptions } from './providers';
 
 const baseEnv = {
   OPENAI_API_KEY: 'sk-openai',
@@ -29,6 +29,16 @@ describe('provider base-URL override', () => {
       apiKey: 'sk-ant',
       baseURL: 'http://localhost:4000/v1',
     });
+  });
+
+  it('EMBEDDING_BASE_URL a chat-től külön végpontra viszi az embeddinget', () => {
+    const config = loadConfig({
+      ...baseEnv,
+      OPENAI_BASE_URL: 'https://ollama.com/v1',
+      EMBEDDING_BASE_URL: 'http://localhost:11434/v1',
+    });
+    expect(openAIOptions(config).baseURL).toBe('https://ollama.com/v1');
+    expect(embeddingOptions(config).baseURL).toBe('http://localhost:11434/v1');
   });
 
   it('üres/whitespace base-URL → nincs override (a defaultra esik)', () => {

@@ -13,11 +13,20 @@ export interface ProviderOptions {
   baseURL?: string;
 }
 
-/** Az OpenAI-adapter beállításai (embedding + HyDE); base-URL kitöltve → helyi Ollama `/v1`. */
+/** Az OpenAI-adapter beállításai (HyDE + openai-provider rerank/válasz); base-URL kitöltve → Ollama `/v1`. */
 export function openAIOptions(config: Config): ProviderOptions {
   return {
     apiKey: config.openaiApiKey,
     ...(config.openaiBaseUrl !== undefined ? { baseURL: config.openaiBaseUrl } : {}),
+  };
+}
+
+/** Embedding külön végponton (helyi nomic, miközben a chat Ollama Cloudon van). */
+export function embeddingOptions(config: Config): ProviderOptions {
+  const baseURL = config.embeddingBaseUrl ?? config.openaiBaseUrl;
+  return {
+    apiKey: config.openaiApiKey,
+    ...(baseURL !== undefined ? { baseURL } : {}),
   };
 }
 
